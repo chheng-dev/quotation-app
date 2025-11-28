@@ -1,0 +1,9 @@
+[
+  {
+    "name": "create_user_table",
+    "timestamp": "2025-11-28T13:52:28.818Z",
+    "duration": "778ms",
+    "user": "user",
+    "applied": true
+  }
+]
