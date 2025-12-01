@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Provider } from "../providers";
+import enMessage from "../message/en.json";
+import kmMessage from "../message/km.json";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,15 +22,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale?: string };
 }>) {
+  const locale = params.locale || "en";
+  const message = locale === "en" ? enMessage : kmMessage;
   return (
-    <html lang="en">
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Provider locale={locale} messages={message}>{children}</Provider>
       </body>
     </html>
   );
