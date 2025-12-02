@@ -34,7 +34,7 @@ The `ApiClient` in `src/lib/api-client.ts` automatically handles:
 
 ```typescript
 // Login - POST /api/login
-await authApi.login({ email: "user@example.com", password: "password123" });
+await authApi.login({ email: 'user@example.com', password: 'password123' });
 
 // Get current user - GET /api/me
 await authApi.getMe();
@@ -46,6 +46,7 @@ await authApi.logout();
 ## Same-Origin vs Cross-Origin
 
 ### Same-Origin (Default - Recommended)
+
 ```
 Frontend: http://localhost:3000
 API: http://localhost:3000/api
@@ -54,6 +55,7 @@ API: http://localhost:3000/api
 ```
 
 ### Cross-Origin (If using separate backend)
+
 ```
 Frontend: http://localhost:3000
 API: http://localhost:4000/api
@@ -64,6 +66,7 @@ API: http://localhost:4000/api
 ## Next.js API Routes
 
 Your API routes are located in:
+
 - `src/app/api/login/route.ts`
 - `src/app/api/logout/route.ts`
 - `src/app/api/users/route.ts`

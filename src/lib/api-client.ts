@@ -1,34 +1,33 @@
-import { ApiClientOptions, ApiConfig } from "../types/api";
+import { ApiClientOptions, ApiConfig } from '../types/api';
 
 const DEFAULT_CONFIG: ApiConfig = {
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
-  credentials: "include",
+  credentials: 'include',
 };
 
 class ApiError extends Error {
-  constructor(public message: string, public statusCode?: number, public data?: unknown) {
+  constructor(
+    public message: string,
+    public statusCode?: number,
+    public data?: unknown,
+  ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
 export class ApiClient {
   private config: ApiConfig;
-  
+
   constructor(config?: ApiConfig) {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
   private async request<T>(endpoint: string, options: ApiClientOptions = {}): Promise<T> {
-    const { 
-      baseURL = this.config.baseURL,
-      headers = {},
-      params,
-      ...fetchOptions
-    } = options;
+    const { baseURL = this.config.baseURL, headers = {}, params, ...fetchOptions } = options;
 
     const url = new URL(`${baseURL}${endpoint}`);
 
@@ -53,8 +52,8 @@ export class ApiClient {
         credentials: this.config.credentials,
       });
 
-      const contentType = response.headers.get("Content-Type");
-      const isJson = contentType && contentType.includes("application/json");
+      const contentType = response.headers.get('Content-Type');
+      const isJson = contentType && contentType.includes('application/json');
 
       if (!response.ok) {
         let errorData;
@@ -65,10 +64,24 @@ export class ApiClient {
           errorData = await response.text();
         }
 
+        // Handle token expiration globally
+        if (response.status === 401 && errorData?.code === 'TOKEN_EXPIRED') {
+          // Token expired - redirect to login
+          if (typeof window !== 'undefined') {
+            const locale = window.location.pathname.split('/')[1] || 'en';
+            window.location.href = `/${locale}/login?expired=true`;
+          }
+          throw new ApiError(
+            errorData?.message || 'Your session has expired. Please login again.',
+            response.status,
+            errorData,
+          );
+        }
+
         throw new ApiError(
           errorData?.message || `API Error: ${response.statusText}`,
           response.status,
-          errorData
+          errorData,
         );
       }
 
@@ -83,48 +96,44 @@ export class ApiClient {
       }
 
       if (error instanceof Error) {
-        throw new ApiError(
-          error.message || "Network error occurred",
-          0,
-          error
-        );
+        throw new ApiError(error.message || 'Network error occurred', 0, error);
       }
 
-      throw new ApiError("An unknown error occurred", 0);
+      throw new ApiError('An unknown error occurred', 0);
     }
   }
 
-  // HTTP methods 
+  // HTTP methods
   get<T>(endpoint: string, options?: ApiClientOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   post<T>(endpoint: string, body?: unknown, options?: ApiClientOptions): Promise<T> {
-    return this.request<T>(endpoint, { 
-      ...options, 
-      method: "POST", 
-      body: body ? JSON.stringify(body) : undefined 
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   put<T>(endpoint: string, body?: unknown, options?: ApiClientOptions): Promise<T> {
-    return this.request<T>(endpoint, { 
-      ...options, 
-      method: "PUT", 
-      body: body ? JSON.stringify(body) : undefined 
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   patch<T>(endpoint: string, body?: unknown, options?: ApiClientOptions): Promise<T> {
-    return this.request<T>(endpoint, { 
-      ...options, 
-      method: "PATCH", 
-      body: body ? JSON.stringify(body) : undefined 
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
     });
   }
 
   delete<T>(endpoint: string, options?: ApiClientOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 
   setAuthToken(token: string) {

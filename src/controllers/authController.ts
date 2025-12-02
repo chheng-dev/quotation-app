@@ -1,13 +1,18 @@
-import bcrypt from "bcryptjs";
-import { userModel } from "../models/userModel";
-import { roleModel } from "../models/roleModel";
-import { signAccessToken, verifyAccessToken, verifyRefreshToken } from "../lib/jwt";
+import bcrypt from 'bcryptjs';
+import { userModel } from '../models/userModel';
+import { roleModel } from '../models/roleModel';
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from '../lib/jwt';
 
 export class AuthController {
   static async authorize(email: string, password: string) {
     const user = await userModel.findByEmail(email);
     if (!user) return null;
-    
+
     const valid = await userModel.verifyPassword(email, password);
     if (!valid) return null;
 
@@ -20,17 +25,17 @@ export class AuthController {
 
   async login(email: string, password: string) {
     const user = await userModel.findByEmail(email);
-    if (!user) throw new Error("Invalid credentials");
-        
+    if (!user) throw new Error('Invalid credentials');
+
     const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) throw new Error("Invalid credentials");
+    if (!isValid) throw new Error('Invalid credentials');
 
     const userRolesRow = await userModel.getUserRoles(user.id);
-    const roleIds = userRolesRow.map(ur => ur.roleId);
+    const roleIds = userRolesRow.map((ur) => ur.roleId);
     const permissions = await roleModel.getRolePermissions(roleIds as number[]);
 
-    const accessToken = signAccessToken({ id: user.id})
-    const refreshToken = signAccessToken({ id: user.id});
+    const accessToken = signAccessToken({ id: user.id });
+    const refreshToken = signRefreshToken({ id: user.id });
 
     return {
       user,
@@ -38,6 +43,16 @@ export class AuthController {
       permissions,
       accessToken,
       refreshToken,
+    };
+  }
+
+  async logout(userId: string) {
+    if (!userId) {
+      throw new Error('User ID is required for logout');
+    }
+    return {
+      success: true,
+      message: 'Logout successful',
     };
   }
 
@@ -56,7 +71,7 @@ export class AuthController {
     if (!user) return null;
 
     const userRolesRow = await userModel.getUserRoles(userId);
-    const roleIds = userRolesRow.map(ur => ur.roleId).filter((id): id is number => id !== null);
+    const roleIds = userRolesRow.map((ur) => ur.roleId).filter((id): id is number => id !== null);
     const permissions = await roleModel.getRolePermissions(roleIds);
 
     return {
@@ -64,7 +79,7 @@ export class AuthController {
       email: user.email,
       name: user.name,
       roles: roleIds,
-      permissions: permissions.map(p => ({ resource: p.resource, action: p.action })),
+      permissions: permissions.map((p) => ({ resource: p.resource, action: p.action })),
     };
   }
 }

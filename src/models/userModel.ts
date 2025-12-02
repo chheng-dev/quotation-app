@@ -1,8 +1,8 @@
-import { BaseModel } from "./baseModel";
-import { userRoles, users } from "../lib/db/schema";
-import { eq } from "drizzle-orm";
-import { db } from "../lib/db";
-import bcrypt from "bcrypt";
+import { BaseModel } from './baseModel';
+import { userRoles, users } from '../lib/db/schema';
+import { and, eq } from 'drizzle-orm';
+import { db } from '../lib/db';
+import bcrypt from 'bcryptjs';
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -11,26 +11,27 @@ export class UserModel extends BaseModel<User> {
   constructor() {
     super(users);
   }
-  
+
   async getUserRoles(userId: number) {
-    return db.select()
+    return db
+      .select()
       .from(userRoles)
       .where(eq(userRoles.userId, userId))
-      .orderBy(userRoles.roleId)
+      .orderBy(userRoles.roleId);
   }
 
   async beforeCreate(data: Partial<User>): Promise<Partial<User>> {
     const emailExists = await userModel.findByEmail(data.email!);
-    if (emailExists) throw new Error("Email already in use");
+    if (emailExists) throw new Error('Email already in use');
 
     const nameExists = await userModel.findOne({ name: data.name! } as Partial<User>);
-    if (nameExists) throw new Error("Name is already in use");
+    if (nameExists) throw new Error('Name is already in use');
 
     const codeExists = await userModel.findByCode(data.code!);
-    if (codeExists) throw new Error("Code is already in use");
-    
+    if (codeExists) throw new Error('Code is already in use');
+
     const email = await userModel.findByEmail(data.email!);
-    if (email) throw new Error("Email already in use");
+    if (email) throw new Error('Email already in use');
 
     return data;
   }
@@ -38,7 +39,9 @@ export class UserModel extends BaseModel<User> {
   /**
    * Create a new user with hashed password
    */
-  async createUser(data: Omit<NewUser, "passwordHash" | "passwordConfirmation"> & { password: string }): Promise<User> {
+  async createUser(
+    data: Omit<NewUser, 'passwordHash' | 'passwordConfirmation'> & { password: string },
+  ): Promise<User> {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(data.password, saltRounds);
     const passwordConfirmation = passwordHash; // Same as hash for confirmation
@@ -71,13 +74,13 @@ export class UserModel extends BaseModel<User> {
    */
   async verifyPassword(email: string, password: string): Promise<User | null> {
     const user = await this.findByEmail(email);
-    
+
     if (!user) {
       return null;
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
-    
+
     if (!isValid) {
       return null;
     }
@@ -91,7 +94,7 @@ export class UserModel extends BaseModel<User> {
   async updatePassword(userId: number, newPassword: string): Promise<User | null> {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(newPassword, saltRounds);
-    
+
     return await this.updateById(userId, {
       passwordHash,
       passwordConfirmation: passwordHash,
@@ -128,9 +131,9 @@ export class UserModel extends BaseModel<User> {
    * Get verified users only
    */
   async findVerifiedUsers(): Promise<User[]> {
-    return await this.findMany({ 
-      isActive: true, 
-      isVerified: true 
+    return await this.findMany({
+      isActive: true,
+      isVerified: true,
     } as Partial<User>);
   }
 
@@ -138,13 +141,17 @@ export class UserModel extends BaseModel<User> {
    * Search users by name or email
    */
   async searchUsers(searchTerm: string): Promise<User[]> {
-    const results = await db
+    const results = await db.select().from(users).where(eq(users.name, searchTerm));
+    return results;
+  }
+
+  async getCurrentUser(userId: number): Promise<User | null> {
+    const result = await db
       .select()
       .from(users)
-      .where(
-        eq(users.name, searchTerm) 
-      );
-    return results;
+      .where(and(eq(users.id, userId), eq(users.isActive, true)))
+      .limit(1);
+    return result.length ? result[0] : null;
   }
 }
 
