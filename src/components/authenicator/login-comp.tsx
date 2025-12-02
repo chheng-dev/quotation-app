@@ -15,8 +15,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { useLogin } from "@/src/hooks/use-auth";
 import { toast } from "sonner";
+import { useAuth } from "@/src/hooks/use-auth";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -34,16 +34,16 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema)
   });
 
-  const { mutate: login } = useLogin();
+  const { loginMutation } = useAuth();
 
   const onSubmit = async (data: LoginFormData) => {
-    await login(
+     loginMutation.mutateAsync(
       data,
       {
         onSuccess: () => {
           toast.success("Login successful!");
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           toast.error(`Login failed: ${error.message}`);
         },
       }

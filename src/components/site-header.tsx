@@ -1,7 +1,7 @@
 import { Separator } from "./ui/separator"
 import ThemeToggle from "./theme-toggle"
-import LanguageSwitcher from "./language-switcher"
 import { SidebarTrigger } from "./ui/sidebar"
+import { LanguageSwitcher } from "./language-switcher"
 
 export function SiteHeader() {
   return (

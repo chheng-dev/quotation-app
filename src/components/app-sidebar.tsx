@@ -1,31 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import * as React from "react"
 import {
   IconCamera,
-  IconChartBar,
-  IconDashboard,
   IconDatabase,
   IconFileAi,
   IconFileDescription,
   IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
   IconReport,
   IconSearch,
-  IconSettings,
-  IconUsers,
+  IconSettings
 } from "@tabler/icons-react"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar"
+import { BookOpen, Settings2, SettingsIcon, UsersIcon } from "lucide-react"
+import * as React from "react"
+import { filterSidebarItems } from "../app/utils/sidebar-permissions"
+import { useAuth } from "../hooks/use-auth"
+import { usePermissions } from "../hooks/use-permission"
 import { NavMain } from "./nav-main"
-import { NavDocuments } from "./nav-documents"
-import { NavSecondary } from "./nav-secondary"
 import { NavUser } from "./nav-user"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "./ui/sidebar"
 
-
-const data = {
+const getSidebarData = () => ({
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -33,29 +29,92 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
+      title: "User Management",
       url: "#",
-      icon: IconDashboard,
+      icon: UsersIcon,
+      isActive: true,
+      permission: { resource: "users", action: "read" },
+      items: [
+        {
+          title: "Users",
+          url: "/admin/users",
+          permission: { resource: "users", action: "read" },
+        },
+        {
+          title: "Customers",
+          url: "/admin/customers",
+          permission: { resource: "customers", action: "read" },
+        },
+        {
+          title: "Contact Person",
+          url: "/admin/contact-person",
+          permission: { resource: "contacts", action: "read" },
+        },
+      ],
     },
     {
-      title: "Lifecycle",
+      title: "Settings",
       url: "#",
-      icon: IconListDetails,
+      icon: SettingsIcon,
+      permission: { resource: "roles", action: "read" },
+      items: [
+        {
+          title: "Roles",
+          url: "/admin/roles",
+          permission: { resource: "roles", action: "read" },
+        },
+      ],
     },
     {
-      title: "Analytics",
+      title: "Documentation",
       url: "#",
-      icon: IconChartBar,
+      icon: BookOpen,
+      items: [
+        {
+          title: "Introduction",
+          url: "#",
+        },
+        {
+          title: "Get Started",
+          url: "#",
+        },
+        {
+          title: "Tutorials",
+          url: "#",
+        },
+        {
+          title: "Changelog",
+          url: "#",
+        },
+      ],
     },
     {
-      title: "Projects",
+      title: "System Settings",
       url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      icon: Settings2,
+      permission: { resource: "settings", action: "read" },
+      items: [
+        {
+          title: "General",
+          url: "/settings/general",
+          permission: { resource: "settings", action: "read" },
+        },
+        {
+          title: "Team",
+          url: "/settings/team",
+          permission: { resource: "settings", action: "manage" },
+        },
+        {
+          title: "Billing",
+          url: "/settings/billing",
+          permission: { resource: "billing", action: "read" },
+        },
+        {
+          title: "Limits",
+          url: "/settings/limits",
+          permission: { resource: "settings", action: "manage" },
+        },
+      ],
     },
   ],
   navClouds: [
@@ -64,14 +123,17 @@ const data = {
       icon: IconCamera,
       isActive: true,
       url: "#",
+      permission: { resource: "capture", action: "read" },
       items: [
         {
           title: "Active Proposals",
-          url: "#",
+          url: "/capture/active",
+          permission: { resource: "proposals", action: "read" },
         },
         {
           title: "Archived",
-          url: "#",
+          url: "/capture/archived",
+          permission: { resource: "proposals", action: "read" },
         },
       ],
     },
@@ -79,14 +141,17 @@ const data = {
       title: "Proposal",
       icon: IconFileDescription,
       url: "#",
+      permission: { resource: "proposals", action: "read" },
       items: [
         {
           title: "Active Proposals",
-          url: "#",
+          url: "/proposals/active",
+          permission: { resource: "proposals", action: "read" },
         },
         {
           title: "Archived",
-          url: "#",
+          url: "/proposals/archived",
+          permission: { resource: "proposals", action: "read" },
         },
       ],
     },
@@ -94,6 +159,7 @@ const data = {
       title: "Prompts",
       icon: IconFileAi,
       url: "#",
+      permission: { resource: "prompts", action: "read" },
       items: [
         {
           title: "Active Proposals",
@@ -109,64 +175,98 @@ const data = {
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
+      permission: { resource: "settings", action: "read" },
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/help",
       icon: IconHelp,
+      // Public item
     },
     {
       title: "Search",
-      url: "#",
+      url: "/search",
       icon: IconSearch,
+      // Public item
     },
   ],
   documents: [
     {
       name: "Data Library",
-      url: "#",
+      url: "/data-library",
       icon: IconDatabase,
+      permission: { resource: "data", action: "read" },
     },
     {
       name: "Reports",
-      url: "#",
+      url: "/reports",
       icon: IconReport,
+      permission: { resource: "reports", action: "read" },
     },
     {
       name: "Word Assistant",
-      url: "#",
+      url: "/word-assistant",
       icon: IconFileWord,
+      permission: { resource: "assistant", action: "use" },
     },
   ],
+})
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    roles?: number[];
+    permissions?: { resource: string; action: string }[];
+  } | null;
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ ...props }: AppSidebarProps) {
+  const { user: authUser } = useAuth();
+  const { user: permUser, canPerformAction, isLoading } = usePermissions();
+
+  const filteredData = React.useMemo(() => {
+    const data = getSidebarData();
+
+    return {
+      user: authUser ? {
+        name: authUser.name,
+        email: authUser.email,
+        avatar: "/avatars/shadcn.jpg",
+      } : data.user,
+      navMain: filterSidebarItems(data.navMain, permUser as any, canPerformAction),
+    }
+  }, [authUser, permUser, canPerformAction]);
+
+   // Don't show sidebar while loading permissions
+  if (isLoading) {
+    return (
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader></SidebarHeader>
+        <SidebarContent>
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          </div>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="h-10" /> {/* Placeholder for user */}
+        </SidebarFooter>
+      </Sidebar>
+    )
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {/* You can add logo or header content here */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={filteredData.navMain as any} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={filteredData.user} />
       </SidebarFooter>
     </Sidebar>
   )

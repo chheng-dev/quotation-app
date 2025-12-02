@@ -1,8 +1,8 @@
 import { BaseModel } from "./baseModel";
 import { userRoles, users } from "../lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../lib/db";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -145,6 +145,20 @@ export class UserModel extends BaseModel<User> {
         eq(users.name, searchTerm) 
       );
     return results;
+  }
+
+  async getCurrentUser(userId: number): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.id, userId),
+          eq(users.isActive, true)
+        )
+      )
+      .limit(1);
+    return result.length ? result[0] : null;
   }
 }
 

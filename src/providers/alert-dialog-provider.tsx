@@ -7,8 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "../components/ui/alert-dialog";
+import { Button } from "../components/ui/button";
 import { cn } from "@/lib/utils";
 import { Loader2, X } from "lucide-react";
 import React, { useContext, useState } from "react";

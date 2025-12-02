@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { userModel } from "../models/userModel";
 import { roleModel } from "../models/roleModel";
-import { signAccessToken, verifyAccessToken, verifyRefreshToken } from "../lib/jwt";
+import { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken } from "../lib/jwt";
 
 export class AuthController {
   static async authorize(email: string, password: string) {
@@ -21,7 +21,7 @@ export class AuthController {
   async login(email: string, password: string) {
     const user = await userModel.findByEmail(email);
     if (!user) throw new Error("Invalid credentials");
-        
+    
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) throw new Error("Invalid credentials");
 
@@ -30,7 +30,7 @@ export class AuthController {
     const permissions = await roleModel.getRolePermissions(roleIds as number[]);
 
     const accessToken = signAccessToken({ id: user.id})
-    const refreshToken = signAccessToken({ id: user.id});
+    const refreshToken = signRefreshToken({ id: user.id});
 
     return {
       user,
@@ -38,6 +38,16 @@ export class AuthController {
       permissions,
       accessToken,
       refreshToken,
+    };
+  }
+
+  async logout(userId: string) {
+    if (!userId) {
+      throw new Error("User ID is required for logout");
+    }
+    return {
+      success: true,
+      message: "Logout successful",
     };
   }
 

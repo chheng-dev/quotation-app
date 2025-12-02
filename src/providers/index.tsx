@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { IntlProvider } from "next-intl";
 import QueryProvider from "./query-provider";
 import AlertDialogProvider from "./alert-dialog-provider";
+import { AuthProvider } from "@/src/components/providers/auth-provider";
 
 export function Provider({ children, locale, messages }: { children: React.ReactNode, locale: string, messages: Record<string, string> }) {
 
@@ -14,9 +15,11 @@ export function Provider({ children, locale, messages }: { children: React.React
       enableSystem>
         <AlertDialogProvider>
           <QueryProvider>
-            <IntlProvider locale={locale} messages={messages}>
-              {children}
-            </IntlProvider>
+            <AuthProvider>
+              <IntlProvider locale={locale} messages={messages}>
+                {children}
+              </IntlProvider>
+            </AuthProvider>
           </QueryProvider>
         </AlertDialogProvider>
     </ThemeProvider>

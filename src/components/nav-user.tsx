@@ -28,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "./ui/sidebar"
+import { useAuth } from "../hooks/use-auth"
 
 export function NavUser({
   user,
@@ -39,6 +40,7 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { logoutMutation } = useAuth()
 
   return (
     <SidebarMenu>
@@ -98,7 +100,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => await logoutMutation.mutate()}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

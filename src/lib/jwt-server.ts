@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
+import { authController } from '../controllers/authController';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
@@ -49,8 +50,11 @@ export function verifyRefreshToken(token: string) {
   }
 }
 
-// Edge Runtime compatible version - just verifies tokens without DB access
-export async function getTokenFromCookies(req: NextRequest) {
+/**
+ * Server-side version with database access
+ * Returns full user object with permissions
+ */
+export async function getTokenFromCookiesWithUser(req: NextRequest) {
   try {
     const accessToken = req.cookies.get("accessToken")?.value;
     const refreshToken = req.cookies.get("refreshToken")?.value;
@@ -60,8 +64,14 @@ export async function getTokenFromCookies(req: NextRequest) {
       if (accessToken) {
         const decoded = verifyAccessToken(accessToken) as { id: number };
         
+        const userWithPermissions = await authController.getUserWithPermissions(decoded.id);
+        
+        if (!userWithPermissions) {
+          return null;
+        }
+        
         return {
-          userId: decoded.id,
+          user: userWithPermissions,
           needsRefresh: false,
         };
       }
@@ -71,18 +81,24 @@ export async function getTokenFromCookies(req: NextRequest) {
         try {
           const decoded = verifyRefreshToken(refreshToken) as { id: number };
           
+          const userWithPermissions = await authController.getUserWithPermissions(decoded.id);
+          
+          if (!userWithPermissions) {
+            return null;
+          }
+          
           // Generate new tokens
           const newAccessToken = signAccessToken({ id: decoded.id });
           const newRefreshToken = signRefreshToken({ id: decoded.id });
           
           return {
-            userId: decoded.id,
+            user: userWithPermissions,
             needsRefresh: true,
             newAccessToken,
             newRefreshToken,
           };
         } catch (refreshError) {
-          console.error("→ Refresh token invalid:", refreshError);
+          console.error("Refresh token invalid:", refreshError);
           return null;
         }
       }
@@ -92,7 +108,7 @@ export async function getTokenFromCookies(req: NextRequest) {
 
     return null;
   } catch (error) {
-    console.error("→ Token verification error:", error);
+    console.error("Token verification error:", error);
     return null;
   }
 }

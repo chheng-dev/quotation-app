@@ -20,6 +20,11 @@ class UserController {
     const result = await userModel.activateUser(userId);
     return result;
   }
+
+  async getCurrentUser(userId: number) {
+    const me = await userModel.getCurrentUser(userId);
+    return me;
+  }
 }
 
 export const userController = new UserController();
