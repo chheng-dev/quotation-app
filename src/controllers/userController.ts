@@ -1,4 +1,4 @@
-import { userModel } from "../models/userModel";
+import { userModel } from '../models/userModel';
 
 class UserController {
   async list() {
@@ -11,6 +11,11 @@ class UserController {
     return result;
   }
 
+  async createUser(data: any) {
+    const result = await userModel.createUser(data);
+    return result;
+  }
+
   async deactivateUser(userId: number) {
     const result = await userModel.deactivateUser(userId);
     return result;
@@ -19,6 +24,11 @@ class UserController {
   async activateUser(userId: number) {
     const result = await userModel.activateUser(userId);
     return result;
+  }
+
+  async getCurrentUser(userId: number) {
+    const me = await userModel.getCurrentUser(userId);
+    return me;
   }
 }
 

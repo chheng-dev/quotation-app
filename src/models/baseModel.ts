@@ -1,9 +1,9 @@
-import { db } from "../lib/db";
-import { eq, and, SQL, sql } from "drizzle-orm";
-import { PgTable } from "drizzle-orm/pg-core";
+import { db } from '../lib/db';
+import { eq, and, SQL, sql } from 'drizzle-orm';
+import { PgTable } from 'drizzle-orm/pg-core';
 
 export type WhereCondition<T> = Partial<T> | SQL;
-export type OrderBy = { column: string; direction: "asc" | "desc" };
+export type OrderBy = { column: string; direction: 'asc' | 'desc' };
 
 export interface PaginationOptions {
   page?: number;
@@ -27,7 +27,7 @@ export class BaseModel<T extends Record<string, unknown>> {
 
   constructor(table: PgTable) {
     this.table = table;
-    this.tableName = String((table as any)[Symbol.for("drizzle:Name")] || "table");
+    this.tableName = String((table as any)[Symbol.for('drizzle:Name')] || 'table');
   }
 
   /**
@@ -35,10 +35,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    */
   async create(data: Partial<T>): Promise<T> {
     const processedData = await this.beforeCreate(data);
-    const result: any = await db
-      .insert(this.table)
-      .values(processedData)
-      .returning();
+    const result: any = await db.insert(this.table).values(processedData).returning();
     return result[0] as T;
   }
 
@@ -46,10 +43,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    * Create multiple records
    */
   async createMany(data: Partial<T>[]): Promise<T[]> {
-    const results: any = await db
-      .insert(this.table)
-      .values(data)
-      .returning();
+    const results: any = await db.insert(this.table).values(data).returning();
     return results as T[];
   }
 
@@ -57,11 +51,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    * Find a single record by ID
    */
   async findById(id: number | string): Promise<T | null> {
-    const result: any = await db
-      .select()
-      .from(this.table)
-      .where(eq(this.table.id, id))
-      .limit(1);
+    const result: any = await db.select().from(this.table).where(eq(this.table.id, id)).limit(1);
     return (result[0] as T) || null;
   }
 
@@ -70,11 +60,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    */
   async findOne(where: Partial<T>): Promise<T | null> {
     const conditions = this.buildWhereConditions(where);
-    const result: any = await db
-      .select()
-      .from(this.table)
-      .where(conditions)
-      .limit(1);
+    const result: any = await db.select().from(this.table).where(conditions).limit(1);
     return (result[0] as T) || null;
   }
 
@@ -87,7 +73,7 @@ export class BaseModel<T extends Record<string, unknown>> {
       orderBy?: OrderBy;
       limit?: number;
       offset?: number;
-    }
+    },
   ): Promise<T[]> {
     let query: any = db.select().from(this.table);
 
@@ -98,9 +84,7 @@ export class BaseModel<T extends Record<string, unknown>> {
 
     if (options?.orderBy) {
       const column = this.table[options.orderBy.column];
-      query = query.orderBy(
-        options.orderBy.direction === "desc" ? sql`${column} DESC` : column
-      );
+      query = query.orderBy(options.orderBy.direction === 'desc' ? sql`${column} DESC` : column);
     }
 
     if (options?.limit) {
@@ -128,7 +112,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    */
   async findWithPagination(
     where?: Partial<T>,
-    options?: PaginationOptions & { orderBy?: OrderBy }
+    options?: PaginationOptions & { orderBy?: OrderBy },
   ): Promise<PaginationResult<T>> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
@@ -136,7 +120,7 @@ export class BaseModel<T extends Record<string, unknown>> {
 
     // Get total count
     let countQuery: any = db.select({ count: sql<number>`count(*)` }).from(this.table);
-    
+
     if (where) {
       const conditions = this.buildWhereConditions(where);
       countQuery = countQuery.where(conditions);
@@ -192,11 +176,7 @@ export class BaseModel<T extends Record<string, unknown>> {
       updatedAt: new Date(),
     };
 
-    const results: any = await db
-      .update(this.table)
-      .set(updateData)
-      .where(conditions)
-      .returning();
+    const results: any = await db.update(this.table).set(updateData).where(conditions).returning();
     return results as T[];
   }
 
@@ -204,10 +184,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    * Delete a record by ID
    */
   async deleteById(id: number | string): Promise<boolean> {
-    const result: any = await db
-      .delete(this.table)
-      .where(eq(this.table.id, id))
-      .returning();
+    const result: any = await db.delete(this.table).where(eq(this.table.id, id)).returning();
     return result.length > 0;
   }
 
@@ -216,10 +193,7 @@ export class BaseModel<T extends Record<string, unknown>> {
    */
   async deleteMany(where: Partial<T>): Promise<number> {
     const conditions = this.buildWhereConditions(where);
-    const result: any = await db
-      .delete(this.table)
-      .where(conditions)
-      .returning();
+    const result: any = await db.delete(this.table).where(conditions).returning();
     return result.length;
   }
 
@@ -276,10 +250,8 @@ export class BaseModel<T extends Record<string, unknown>> {
   /**
    * Begin transaction
    */
-  async transaction<R>(
-    callback: Parameters<typeof db.transaction>[0]
-  ): Promise<R> {
-    return await db.transaction(callback) as R;
+  async transaction<R>(callback: Parameters<typeof db.transaction>[0]): Promise<R> {
+    return (await db.transaction(callback)) as R;
   }
 
   protected async beforeCreate(data: Partial<T>): Promise<Partial<T>> {

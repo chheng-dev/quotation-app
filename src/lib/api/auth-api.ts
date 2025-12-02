@@ -1,14 +1,14 @@
-import { LoginCredentials } from "@/src/types/api";
-import { apiClient } from "../api-client";
+import { LoginCredentials } from '@/src/types/api';
+import { apiClient } from '../api-client';
 
 export const authApi = {
   login: async (credentials: LoginCredentials) => {
-    return apiClient.post("/login", credentials);
+    return apiClient.post('/login', credentials);
   },
 
-  logout: () => apiClient.post("/logout"),
+  logout: () => apiClient.post('/logout'),
 
-  refreshToken: () => apiClient.post("/refresh-token"),
+  refreshToken: () => apiClient.post('/refresh-token'),
 
-  getMe: () => apiClient.get("/me"),
-}
+  getMe: () => apiClient.get('/auth/me'),
+};

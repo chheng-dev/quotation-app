@@ -11,6 +11,6 @@ export const users = pgTable('users', {
   passwordConfirmation: text('password_confirmation').notNull(),
   isActive: boolean('is_active').default(true),
   isVerified: boolean('is_verified').default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
