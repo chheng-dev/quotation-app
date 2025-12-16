@@ -1,14 +1,18 @@
-import { integer, pgTable } from "drizzle-orm/pg-core";
-import { roles } from "./roles";
-import { permissions } from "./permissions";
-import { relations } from "drizzle-orm";
+import { integer, pgTable } from 'drizzle-orm/pg-core';
+import { roles } from './roles';
+import { permissions } from './permissions';
+import { relations } from 'drizzle-orm';
 
-export const rolePermissions = pgTable("role_permissions", {
-  roleId: integer("role_id").references(() => roles.id),
-  permissionId: integer("permission_id").references(() => permissions.id),
-}, (table) => ({
-  pk: [table.roleId, table.permissionId],
-}));
+export const rolePermissions = pgTable(
+  'role_permissions',
+  {
+    roleId: integer('role_id').references(() => roles.id),
+    permissionId: integer('permission_id').references(() => permissions.id),
+  },
+  (table) => ({
+    pk: [table.roleId, table.permissionId],
+  }),
+);
 
 export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
   role: one(roles, {
@@ -19,4 +23,4 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
     fields: [rolePermissions.permissionId],
     references: [permissions.id],
   }),
-}));  
+}));

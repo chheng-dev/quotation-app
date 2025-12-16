@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { authController } from '../controllers/authController';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
@@ -19,22 +18,28 @@ export function verifyAccessToken(token: string) {
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET!);
     return decoded;
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Token verification failed:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Token verification failed:', error);
     }
-    let err: Error & { status?: number };
+
     if (error instanceof jwt.TokenExpiredError) {
-      err = new Error("Token expired");
+      const err = new Error('Token expired') as Error & { status?: number; code?: string };
       err.status = 401;
+      err.code = 'TOKEN_EXPIRED';
       throw err;
     }
     if (error instanceof jwt.JsonWebTokenError) {
-      err = new Error("Invalid token");
+      const err = new Error('Invalid token') as Error & { status?: number; code?: string };
       err.status = 401;
+      err.code = 'TOKEN_INVALID';
       throw err;
     }
-    err = new Error("Token verification failed");
+    const err = new Error('Token verification failed') as Error & {
+      status?: number;
+      code?: string;
+    };
     err.status = 401;
+    err.code = 'TOKEN_VERIFICATION_FAILED';
     throw err;
   }
 }
@@ -43,81 +48,68 @@ export function verifyRefreshToken(token: string) {
   try {
     return jwt.verify(token, REFRESH_TOKEN_SECRET!);
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Refresh token verification failed:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Refresh token verification failed:', error);
     }
-    throw new Error("Invalid refresh token");
+
+    if (error instanceof jwt.TokenExpiredError) {
+      const err = new Error('Refresh token expired') as Error & { status?: number; code?: string };
+      err.status = 401;
+      err.code = 'REFRESH_TOKEN_EXPIRED';
+      throw err;
+    }
+
+    const err = new Error('Invalid refresh token') as Error & { status?: number; code?: string };
+    err.status = 401;
+    err.code = 'REFRESH_TOKEN_INVALID';
+    throw err;
   }
 }
 
+// Edge Runtime compatible version - just verifies tokens without DB access
 export async function getTokenFromCookies(req: NextRequest) {
   try {
-    const accessToken = req.cookies.get("accessToken")?.value;
-    const refreshToken = req.cookies.get("refreshToken")?.value;
-
-    console.log("→ AccessToken exists:", !!accessToken);
-    console.log("→ RefreshToken exists:", !!refreshToken);
+    const accessToken = req.cookies.get('accessToken')?.value;
+    const refreshToken = req.cookies.get('refreshToken')?.value;
 
     // Try to verify the access token
     try {
       if (accessToken) {
         const decoded = verifyAccessToken(accessToken) as { id: number };
-        console.log("→ Access token valid, user ID:", decoded.id);
-        
-        const userWithPermissions = await authController.getUserWithPermissions(decoded.id);
-        
-        if (!userWithPermissions) {
-          console.log("→ User not found in database");
-          return null;
-        }
-        
+
         return {
-          user: userWithPermissions,
+          userId: decoded.id,
           needsRefresh: false,
         };
       }
     } catch (error) {
-      console.log("→ Access token invalid/expired");
-      
       // If access token is expired but refresh token exists, try to refresh
-      if (error instanceof Error && error.message === "Token expired" && refreshToken) {
-        console.log("→ Attempting token refresh...");
-        
+      if (error instanceof Error && error.message === 'Token expired' && refreshToken) {
         try {
           const decoded = verifyRefreshToken(refreshToken) as { id: number };
-          console.log("→ Refresh token valid, user ID:", decoded.id);
-          
-          const userWithPermissions = await authController.getUserWithPermissions(decoded.id);
-          
-          if (!userWithPermissions) {
-            console.log("→ User not found in database");
-            return null;
-          }
-          
+
           // Generate new tokens
           const newAccessToken = signAccessToken({ id: decoded.id });
           const newRefreshToken = signRefreshToken({ id: decoded.id });
-          
-          console.log("→ New tokens generated");
-          
+
           return {
-            user: userWithPermissions,
+            userId: decoded.id,
             needsRefresh: true,
             newAccessToken,
             newRefreshToken,
           };
         } catch (refreshError) {
-          console.error("→ Refresh token invalid:", refreshError);
+          console.error('→ Refresh token invalid:', refreshError);
           return null;
         }
       }
-      
+
       return null;
     }
 
     return null;
   } catch (error) {
-    console.error("→ Token verification error:", error);
+    console.error('→ Token verification error:', error);
     return null;
   }
 }

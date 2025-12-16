@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { authController } from "../controllers/authController";
+import { NextRequest, NextResponse } from 'next/server';
+import { authController } from '../controllers/authController';
 
 export interface User {
   id: number;
@@ -10,8 +10,8 @@ export interface User {
 }
 
 export type ApiHandler<T = unknown> = (
-  req: NextRequest, 
-  user?: User | null
+  req: NextRequest,
+  user?: User | null,
 ) => Promise<NextResponse<T>> | Promise<Response>;
 
 export interface ApiRouteOptions {
@@ -22,7 +22,7 @@ export interface ApiRouteOptions {
 // Base wrapper
 export const handleApiRoute = <T = unknown>(
   handler: ApiHandler<T>,
-  options: ApiRouteOptions = {}
+  options: ApiRouteOptions = {},
 ) => {
   return async (req: NextRequest) => {
     const { requireAuth = false, permissions = [] } = options;
@@ -31,51 +31,84 @@ export const handleApiRoute = <T = unknown>(
 
     if (requireAuth) {
       const allCookies = req.cookies.getAll();
-      const token = req.cookies.get("accessToken")?.value 
+      const token = req.cookies.get('accessToken')?.value;
 
       if (!token) {
-        return NextResponse.json({ 
-          error: "Unauthorized - No token",
-          debug: {
-            availableCookies: allCookies.map(c => c.name),
-            expectedCookie: "accessToken"
-          }
-        }, { status: 401 });
+        return NextResponse.json(
+          {
+            error: 'Unauthorized - No token',
+            debug: {
+              availableCookies: allCookies.map((c) => c.name),
+              expectedCookie: 'accessToken',
+            },
+          },
+          { status: 401 },
+        );
       }
 
       try {
         const payload = await authController.verifyAccessToken(token);
-        
+
         if (!payload || typeof payload === 'string' || !('id' in payload)) {
-          return NextResponse.json({ error: "Unauthorized - Invalid token" }, { status: 401 });
+          return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
         }
 
         // Fetch full user data with roles and permissions
         const userData = await authController.getUserWithPermissions(payload.id as number);
         if (!userData) {
-          return NextResponse.json({ error: "Unauthorized - User not found" }, { status: 401 });
+          return NextResponse.json({ error: 'Unauthorized - User not found' }, { status: 401 });
         }
 
         user = userData;
       } catch (error) {
-        console.error("Token verification error:", error);
-        return NextResponse.json({ error: "Unauthorized - Token verification failed" }, { status: 401 });
+        console.error('Token verification error:', error);
+
+        // Check if token is expired or invalid
+        const err = error as Error & { code?: string };
+        const isTokenExpired = err.code === 'TOKEN_EXPIRED' || err.message?.includes('expired');
+        const isTokenInvalid =
+          err.code === 'TOKEN_INVALID' || err.code === 'TOKEN_VERIFICATION_FAILED';
+
+        if (isTokenExpired || isTokenInvalid) {
+          // Clear cookies and return 401 with specific error code
+          const response = NextResponse.json(
+            {
+              error: 'Unauthorized',
+              code: isTokenExpired ? 'TOKEN_EXPIRED' : 'TOKEN_INVALID',
+              message: isTokenExpired
+                ? 'Your session has expired. Please login again.'
+                : 'Invalid authentication token.',
+            },
+            { status: 401 },
+          );
+
+          // Clear authentication cookies
+          response.cookies.delete('accessToken');
+          response.cookies.delete('refreshToken');
+
+          return response;
+        }
+
+        return NextResponse.json(
+          { error: 'Unauthorized - Token verification failed' },
+          { status: 401 },
+        );
       }
 
       // Check permissions
       if (permissions.length > 0 && user?.permissions) {
         const userPermissions = user.permissions;
-        
-        const hasAllPerms = permissions.every(requiredPerm => 
+
+        const hasAllPerms = permissions.every((requiredPerm) =>
           userPermissions.some(
-            userPerm => 
-              userPerm.resource === requiredPerm.resource && 
-              userPerm.action === requiredPerm.action
-          )
+            (userPerm) =>
+              userPerm.resource === requiredPerm.resource &&
+              userPerm.action === requiredPerm.action,
+          ),
         );
 
         if (!hasAllPerms) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
       }
     }
@@ -87,7 +120,7 @@ export const handleApiRoute = <T = unknown>(
 // Convenience wrappers
 export const handleProtectedRoute = <T = unknown>(
   handler: ApiHandler<T>,
-  options: ApiRouteOptions = {}
+  options: ApiRouteOptions = {},
 ) => handleApiRoute(handler, { ...options, requireAuth: true });
 
 export const handlePublicRoute = <T = unknown>(handler: ApiHandler<T>) =>

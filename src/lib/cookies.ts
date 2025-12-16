@@ -1,24 +1,24 @@
-import { cookies } from "next/headers";
+import { cookies } from 'next/headers';
 
 export async function setAccessTokenCookie(token: string) {
   const cookieStore = await cookies();
-  cookieStore.set("accessToken", token, {
+  cookieStore.set('accessToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
     maxAge: 60 * 60 * 24, // 1 day
   });
 }
 
 export async function setRefreshTokenCookie(token: string) {
   const cookieStore = await cookies();
-  cookieStore.set("refreshToken", token, {
+  cookieStore.set('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
   });
 }
 
@@ -33,6 +33,6 @@ export async function deleteCookies(name: string) {
 }
 
 export async function clearAuth() {
-  await deleteCookies("accessToken");
-  await deleteCookies("refreshToken");
+  await deleteCookies('accessToken');
+  await deleteCookies('refreshToken');
 }

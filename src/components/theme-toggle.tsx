@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useTheme } from "next-themes";
-import React, { useEffect } from "react";
-import { Button } from "./ui/button";
-import { Sun, Moon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from 'next-themes';
+import React, { useEffect } from 'react';
+import { Button } from './ui/button';
+import { Sun, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -14,7 +14,7 @@ export default function ThemeToggle() {
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
-  const isLight = theme === "light";
+  const isLight = theme === 'light';
 
   return (
     <Button
@@ -22,7 +22,7 @@ export default function ThemeToggle() {
       aria-label="Toggle theme"
       variant="ghost"
       className="shadow-none"
-      onClick={() => setTheme(isLight ? "dark" : "light")}
+      onClick={() => setTheme(isLight ? 'dark' : 'light')}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -32,11 +32,7 @@ export default function ThemeToggle() {
           exit={{ opacity: 0, rotate: 45, scale: 0.6 }}
           transition={{ duration: 0.25 }}
         >
-          {isLight ? (
-            <Sun className="w-4 h-4" />
-          ) : (
-            <Moon className="w-4 h-4" />
-          )}
+          {isLight ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </motion.div>
       </AnimatePresence>
     </Button>

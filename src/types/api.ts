@@ -1,6 +1,9 @@
+import { Permission, Role } from './rbac';
+
 export type LoginCredentials = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export type LoginResponse = {
@@ -8,12 +11,20 @@ export type LoginResponse = {
     id: number;
     email: string;
     name: string;
-    role: string;
+    roles: Role[];
+    permissions: Permission[];
+    metadata?: {
+      lastLoginAt?: string;
+      isVerified?: boolean;
+      expiredAt?: string;
+    };
   };
   tokens?: {
     accessToken: string;
     refreshToken: string;
+    expiresIn?: number;
   };
+  permissions?: Permission[];
 };
 
 export type ApiError = {

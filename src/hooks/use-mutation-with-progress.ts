@@ -1,12 +1,12 @@
-import {
-  useMutation,
-  UseMutationOptions,
-  UseMutationResult
-} from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useMutation, UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
 
-export interface MutationWithProgressOptions<TData, TError, TVariables, TContext>
-  extends UseMutationOptions<TData, TError, TVariables, TContext> {
+export interface MutationWithProgressOptions<
+  TData,
+  TError,
+  TVariables,
+  TContext,
+> extends UseMutationOptions<TData, TError, TVariables, TContext> {
   onProgress?: (progress: number) => void;
 }
 
@@ -14,9 +14,9 @@ export function useMutationWithProgress<
   TData = unknown,
   TError = unknown,
   TVariables = void,
-  TContext = unknown
+  TContext = unknown,
 >(
-  options: MutationWithProgressOptions<TData, TError, TVariables, TContext>
+  options: MutationWithProgressOptions<TData, TError, TVariables, TContext>,
 ): UseMutationResult<TData, TError, TVariables, TContext> & {
   progress: number;
   resetProgress: () => void;
@@ -29,7 +29,7 @@ export function useMutationWithProgress<
       setProgress(newProgress);
       onProgress?.(newProgress);
     },
-    [onProgress]
+    [onProgress],
   );
 
   const resetProgress = useCallback(() => {
