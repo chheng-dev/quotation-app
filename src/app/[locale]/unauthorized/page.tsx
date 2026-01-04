@@ -1,13 +1,14 @@
-'use client';
+'use client'
 
-import { Button } from '@/src/components/ui/button';
-import { ShieldAlert } from 'lucide-react';
-import { useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/src/components/ui/button'
+import { ShieldAlert } from 'lucide-react'
 
 export default function UnauthorizedPage() {
-  const router = useRouter();
-  const locale = useLocale();
+  const router = useRouter()
+  const locale = useLocale()
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -19,7 +20,9 @@ export default function UnauthorizedPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-muted dark:text-muted-foreground">Access Denied</h1>
+          <h1 className="text-3xl font-bold text-muted dark:text-muted-foreground">
+            Access Denied
+          </h1>
           <p className="text-lg text-gray-600">
             You don&apos;t have permission to access this page.
           </p>
@@ -27,24 +30,27 @@ export default function UnauthorizedPage() {
 
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
-            If you believe this is an error, please contact your administrator to request access.
+            If you believe this is an error, please contact your administrator
+            to request access.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => router.back()} variant="outline">
               Go Back
             </Button>
-            <Button onClick={() => router.push(`/${locale}/admin`)}>Go to Dashboard</Button>
+            <Button onClick={() => router.push(`/${locale}/admin`)}>
+              Go to Dashboard
+            </Button>
           </div>
         </div>
 
         <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">
-            <strong>Need help?</strong> Contact your system administrator to request the necessary
-            permissions.
+            <strong>Need help?</strong> Contact your system administrator to
+            request the necessary permissions.
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

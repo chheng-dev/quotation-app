@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   IconCreditCard,
@@ -6,9 +6,10 @@ import {
   IconLogout,
   IconNotification,
   IconUserCircle,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { useAuth } from '../hooks/use-auth'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,21 +18,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from './ui/sidebar';
-import { useAuth } from '../hooks/use-auth';
+} from './ui/dropdown-menu'
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from './ui/sidebar'
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
+    name: string
+    email: string
+    avatar: string
+  }
 }) {
-  const { isMobile } = useSidebar();
-  const { logoutMutation } = useAuth();
+  const { isMobile } = useSidebar()
+  const { logoutMutation } = useAuth()
 
   return (
     <SidebarMenu>
@@ -48,7 +53,9 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  {user.email}
+                </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -67,7 +74,9 @@ export function NavUser({
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {user.email}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -87,7 +96,9 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={async () => await logoutMutation.mutate()}>
+            <DropdownMenuItem
+              onClick={async () => await logoutMutation.mutate()}
+            >
               <IconLogout />
               Log out
             </DropdownMenuItem>
@@ -95,5 +106,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }

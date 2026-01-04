@@ -4,8 +4,8 @@
  */
 
 export interface RoutePermission {
-  resource: string;
-  action: string;
+  resource: string
+  action: string
 }
 
 export const routePermissions: Record<string, RoutePermission> = {
@@ -38,7 +38,7 @@ export const routePermissions: Record<string, RoutePermission> = {
 
   // Settings
   '/settings': { resource: 'settings', action: 'read' },
-};
+}
 
 /**
  * Get required permission for a given path
@@ -46,17 +46,17 @@ export const routePermissions: Record<string, RoutePermission> = {
 export function getRequiredPermission(path: string): RoutePermission | null {
   // Exact match first
   if (routePermissions[path]) {
-    return routePermissions[path];
+    return routePermissions[path]
   }
 
   // Check for parent paths
   for (const [route, permission] of Object.entries(routePermissions)) {
     if (path.startsWith(route)) {
-      return permission;
+      return permission
     }
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -67,11 +67,13 @@ export const publicRoutes = [
   '/help',
   '/search',
   '/admin', // Dashboard is accessible to all authenticated users
-];
+]
 
 /**
  * Check if a route is public
  */
 export function isPublicRoute(path: string): boolean {
-  return publicRoutes.some((route) => path === route || path.startsWith(`${route}/`));
+  return publicRoutes.some(
+    (route) => path === route || path.startsWith(`${route}/`),
+  )
 }

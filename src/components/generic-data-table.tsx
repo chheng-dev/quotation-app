@@ -1,8 +1,24 @@
-'use client';
+'use client'
 
+import * as React from 'react'
+
+import { Button } from '@/src/components/ui/button'
 import {
-  IconLayoutColumns
-} from '@tabler/icons-react';
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/src/components/ui/dropdown-menu'
+import { Input } from '@/src/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/src/components/ui/table'
+import { IconLayoutColumns } from '@tabler/icons-react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -15,37 +31,20 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import * as React from 'react';
+  useReactTable,
+} from '@tanstack/react-table'
 
-import { Button } from '@/src/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger
-} from '@/src/components/ui/dropdown-menu';
-import { Input } from '@/src/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/src/components/ui/table';
-import { Card, CardContent } from './ui/card';
-import { Skeleton } from './ui/skeleton';
+import { Card, CardContent } from './ui/card'
+import { Skeleton } from './ui/skeleton'
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  searchKey?: string;
-  searchPlaceholder?: string;
-  isCustomColumnsVisible?: boolean;
-  isLoading?: boolean;
-  actions?: React.ReactNode;
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+  searchKey?: string
+  searchPlaceholder?: string
+  isCustomColumnsVisible?: boolean
+  isLoading?: boolean
+  actions?: React.ReactNode
 }
 
 export function GenericDataTable<TData, TValue>({
@@ -55,16 +54,19 @@ export function GenericDataTable<TData, TValue>({
   searchPlaceholder = 'Search...',
   isCustomColumnsVisible = false,
   isLoading = false,
-  actions
+  actions,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  )
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
-  });
+  })
 
   //   if (actions) {
   //     cols.push({
@@ -117,21 +119,23 @@ export function GenericDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  });
+  })
 
-
-  const skeletonRows = Array.from({ length: pagination.pageSize }).map((_, rowIndex) => (
-    <TableRow key={`skeleton-${rowIndex}`} className="hover:bg-transparent">
-      {columns.map((column, colIndex) => (
-        <TableCell
-          key={`skeleton-${rowIndex}-${colIndex}`}  colSpan={(column as any).size ?? 1}
-          className="px-6 py-4"
-        >
-          <Skeleton className="h-4 w-full max-w-[200px]" />
-        </TableCell>
-      ))}
-    </TableRow>
-  ));  
+  const skeletonRows = Array.from({ length: pagination.pageSize }).map(
+    (_, rowIndex) => (
+      <TableRow key={`skeleton-${rowIndex}`} className="hover:bg-transparent">
+        {columns.map((column, colIndex) => (
+          <TableCell
+            key={`skeleton-${rowIndex}-${colIndex}`}
+            colSpan={(column as any).size ?? 1}
+            className="px-6 py-4"
+          >
+            <Skeleton className="h-4 w-full max-w-[200px]" />
+          </TableCell>
+        ))}
+      </TableRow>
+    ),
+  )
 
   return (
     <Card>
@@ -142,8 +146,12 @@ export function GenericDataTable<TData, TValue>({
             {searchKey && (
               <Input
                 placeholder={searchPlaceholder}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-                onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
+                value={
+                  (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
+                }
+                onChange={(event) =>
+                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                }
                 className="max-w-sm"
               />
             )}
@@ -165,11 +173,13 @@ export function GenericDataTable<TData, TValue>({
                           key={column.id}
                           className="capitalize"
                           checked={column.getIsVisible()}
-                          onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                          onCheckedChange={(value) =>
+                            column.toggleVisibility(!!value)
+                          }
                         >
                           {column.id}
                         </DropdownMenuCheckboxItem>
-                      );
+                      )
                     })}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -187,9 +197,12 @@ export function GenericDataTable<TData, TValue>({
                         <TableHead key={header.id} className="font-semibold">
                           {header.isPlaceholder
                             ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
                         </TableHead>
-                      );
+                      )
                     })}
                   </TableRow>
                 ))}
@@ -199,17 +212,26 @@ export function GenericDataTable<TData, TValue>({
                   skeletonRows
                 ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                    >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
                       No results.
                     </TableCell>
                   </TableRow>
@@ -220,5 +242,5 @@ export function GenericDataTable<TData, TValue>({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

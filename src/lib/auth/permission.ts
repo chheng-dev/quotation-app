@@ -3,5 +3,7 @@ export function can(
   resource: string,
   action: string,
 ): boolean {
-  return userPermissions.some((p) => p.resource === resource && p.action === action);
+  return userPermissions.some(
+    (p) => p.resource === resource && p.action === action,
+  )
 }

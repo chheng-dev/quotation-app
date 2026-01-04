@@ -1,6 +1,6 @@
-import { CheckCheckIcon } from 'lucide-react';
+import { CheckCheckIcon } from 'lucide-react'
 
-import { Alert, AlertTitle, AlertDescription } from './alert';
+import { Alert, AlertDescription, AlertTitle } from './alert'
 
 const AlertOutlineSuccess = () => {
   return (
@@ -11,7 +11,7 @@ const AlertOutlineSuccess = () => {
         You are all set! You can now log in and start exploring your dashboard.
       </AlertDescription>
     </Alert>
-  );
-};
+  )
+}
 
-export default AlertOutlineSuccess;
+export default AlertOutlineSuccess

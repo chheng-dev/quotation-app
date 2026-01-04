@@ -19,9 +19,9 @@ This application uses a two-layer security approach:
 Wrap your page content with the `PermissionGuard` component:
 
 ```tsx
-'use client';
+'use client'
 
-import { PermissionGuard } from '@/src/components/permission-guard';
+import { PermissionGuard } from '@/src/components/permission-guard'
 
 export default function UserPage() {
   return (
@@ -32,7 +32,7 @@ export default function UserPage() {
         {/* ... */}
       </div>
     </PermissionGuard>
-  );
+  )
 }
 ```
 
@@ -48,9 +48,9 @@ export default function UserPage() {
 For pages that require multiple permissions:
 
 ```tsx
-'use client';
+'use client'
 
-import { MultiplePermissionGuard } from '@/src/components/permission-guard';
+import { MultiplePermissionGuard } from '@/src/components/permission-guard'
 
 export default function RolesPage() {
   return (
@@ -66,7 +66,7 @@ export default function RolesPage() {
         {/* ... */}
       </div>
     </MultiplePermissionGuard>
-  );
+  )
 }
 ```
 
@@ -75,28 +75,30 @@ export default function RolesPage() {
 For more complex conditional rendering:
 
 ```tsx
-'use client';
+'use client'
 
-import { usePermissions } from '@/src/hooks/use-permission';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import { usePermissions } from '@/src/hooks/use-permission'
 
 export default function ComplexPage() {
-  const { can, isLoading } = usePermissions();
-  const router = useRouter();
+  const { can, isLoading } = usePermissions()
+  const router = useRouter()
 
   useEffect(() => {
     if (!isLoading && !can('users', 'read')) {
-      router.replace('/admin');
+      router.replace('/admin')
     }
-  }, [can, isLoading, router]);
+  }, [can, isLoading, router])
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
-  const canEdit = can('users', 'update');
-  const canDelete = can('users', 'delete');
+  const canEdit = can('users', 'update')
+  const canDelete = can('users', 'delete')
 
   return (
     <div>
@@ -104,7 +106,7 @@ export default function ComplexPage() {
       {canEdit && <button>Edit</button>}
       {canDelete && <button>Delete</button>}
     </div>
-  );
+  )
 }
 ```
 
@@ -119,7 +121,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   // ... existing routes
   '/admin/products': { resource: 'products', action: 'read' },
   '/admin/products/create': { resource: 'products', action: 'create' },
-};
+}
 ```
 
 ### Step 2: Protect the Page
@@ -127,16 +129,16 @@ export const routePermissions: Record<string, RoutePermission> = {
 In your page component:
 
 ```tsx
-'use client';
+'use client'
 
-import { PermissionGuard } from '@/src/components/permission-guard';
+import { PermissionGuard } from '@/src/components/permission-guard'
 
 export default function ProductsPage() {
   return (
     <PermissionGuard resource="products" action="read">
       {/* Your content */}
     </PermissionGuard>
-  );
+  )
 }
 ```
 
@@ -176,7 +178,7 @@ Edit `/src/components/app-sidebar.tsx`:
 
 ```tsx
 {
-  can('users', 'delete') && <button onClick={handleDelete}>Delete</button>;
+  can('users', 'delete') && <button onClick={handleDelete}>Delete</button>
 }
 ```
 
@@ -238,15 +240,15 @@ WHERE u.email = 'your@email.com';
 **Solution**: Add PermissionGuard to the page:
 
 ```tsx
-'use client';
-import { PermissionGuard } from '@/src/components/permission-guard';
+'use client'
+import { PermissionGuard } from '@/src/components/permission-guard'
 
 export default function YourPage() {
   return (
     <PermissionGuard resource="resource_name" action="read">
       {/* content */}
     </PermissionGuard>
-  );
+  )
 }
 ```
 
@@ -299,18 +301,18 @@ Resource: "users"
 ## Example: Complete Protected Page
 
 ```tsx
-'use client';
+'use client'
 
-import { PermissionGuard } from '@/src/components/permission-guard';
-import { usePermissions } from '@/src/hooks/use-permission';
-import { Button } from '@/src/components/ui/button';
+import { PermissionGuard } from '@/src/components/permission-guard'
+import { Button } from '@/src/components/ui/button'
+import { usePermissions } from '@/src/hooks/use-permission'
 
 export default function UsersPage() {
-  const { can } = usePermissions();
+  const { can } = usePermissions()
 
-  const canCreate = can('users', 'create');
-  const canUpdate = can('users', 'update');
-  const canDelete = can('users', 'delete');
+  const canCreate = can('users', 'create')
+  const canUpdate = can('users', 'update')
+  const canDelete = can('users', 'delete')
 
   return (
     <PermissionGuard resource="users" action="read">
@@ -336,7 +338,7 @@ export default function UsersPage() {
         </table>
       </div>
     </PermissionGuard>
-  );
+  )
 }
 ```
 
@@ -352,19 +354,19 @@ Example API route protection:
 
 ```typescript
 // /app/api/users/route.ts
-import { getTokenFromCookiesWithUser } from '@/src/lib/jwt-server';
-import { canPerformAction } from '@/src/app/utils/permissions';
+import { canPerformAction } from '@/src/app/utils/permissions'
+import { getTokenFromCookiesWithUser } from '@/src/lib/jwt-server'
 
 export async function GET(req: Request) {
-  const result = await getTokenFromCookiesWithUser();
+  const result = await getTokenFromCookiesWithUser()
 
   if (!result?.user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Check permission
   if (!canPerformAction(result.user, 'users', 'read')) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   // ... your logic

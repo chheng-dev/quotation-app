@@ -1,30 +1,39 @@
-'use client';
+'use client'
 
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { toast } from 'sonner';
-import { useAuth } from '@/src/hooks/use-auth';
-import { Alert, AlertDescription } from '@/src/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { useSearchParams } from 'next/navigation'
+
+import { Alert, AlertDescription } from '@/src/components/ui/alert'
+import { useAuth } from '@/src/hooks/use-auth'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
+import { z } from 'zod'
+
+import { Button } from '../ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../ui/card'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
-});
+})
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
-  const searchParams = useSearchParams();
-  const isExpired = searchParams?.get('expired') === 'true';
+  const searchParams = useSearchParams()
+  const isExpired = searchParams?.get('expired') === 'true'
 
   const {
     register,
@@ -32,35 +41,37 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  });
+  })
 
-  const { loginMutation } = useAuth();
+  const { loginMutation } = useAuth()
 
   // Show toast notification if session expired
   useEffect(() => {
     if (isExpired) {
       toast.error('Your session has expired. Please login again.', {
         duration: 5000,
-      });
+      })
     }
-  }, [isExpired]);
+  }, [isExpired])
 
   const onSubmit = async (data: LoginFormData) => {
     loginMutation.mutateAsync(data, {
       onSuccess: () => {
-        toast.success('Login successful!');
+        toast.success('Login successful!')
       },
       onError: (error: Error) => {
-        toast.error(`Login failed: ${error.message}`);
+        toast.error(`Login failed: ${error.message}`)
       },
-    });
-  };
+    })
+  }
 
   return (
     <Card className="w-full md:w-[350px] shadow-none">
       <CardHeader>
         <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
+        <CardDescription>
+          Enter your credentials to access your account
+        </CardDescription>
       </CardHeader>
       {isExpired && (
         <div className="px-6 pb-4">
@@ -85,7 +96,11 @@ export default function LoginForm() {
               {...register('email')}
               aria-invalid={errors.email ? 'true' : 'false'}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">
@@ -99,7 +114,9 @@ export default function LoginForm() {
               aria-invalid={errors.password ? 'true' : 'false'}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
         </CardContent>
@@ -110,5 +127,5 @@ export default function LoginForm() {
         </CardFooter>
       </form>
     </Card>
-  );
+  )
 }

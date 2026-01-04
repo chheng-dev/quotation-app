@@ -17,9 +17,9 @@ Added error codes to distinguish between different token errors:
 ```typescript
 // Now errors include a code property
 if (error instanceof jwt.TokenExpiredError) {
-  const err = new Error('Token expired') as Error & { code: string };
-  err.code = 'TOKEN_EXPIRED';
-  throw err;
+  const err = new Error('Token expired') as Error & { code: string }
+  err.code = 'TOKEN_EXPIRED'
+  throw err
 }
 ```
 
@@ -40,13 +40,13 @@ if (isTokenExpired || isTokenInvalid) {
       message: 'Your session has expired. Please login again.',
     },
     { status: 401 },
-  );
+  )
 
   // Clear authentication cookies
-  response.cookies.delete('accessToken');
-  response.cookies.delete('refreshToken');
+  response.cookies.delete('accessToken')
+  response.cookies.delete('refreshToken')
 
-  return response;
+  return response
 }
 ```
 
@@ -62,8 +62,8 @@ if (isTokenExpired || isTokenInvalid) {
 ```typescript
 if (response.status === 401 && errorData?.code === 'TOKEN_EXPIRED') {
   if (typeof window !== 'undefined') {
-    const locale = window.location.pathname.split('/')[1] || 'en';
-    window.location.href = `/${locale}/login?expired=true`;
+    const locale = window.location.pathname.split('/')[1] || 'en'
+    window.location.href = `/${locale}/login?expired=true`
   }
 }
 ```
@@ -121,8 +121,8 @@ if (response.status === 401 && errorData?.code === 'TOKEN_EXPIRED') {
 **How**:
 
 ```typescript
-response.cookies.delete('accessToken');
-response.cookies.delete('refreshToken');
+response.cookies.delete('accessToken')
+response.cookies.delete('refreshToken')
 ```
 
 ### Client-Side (Logout)
@@ -132,8 +132,8 @@ response.cookies.delete('refreshToken');
 **How**:
 
 ```typescript
-response.cookies.delete('accessToken');
-response.cookies.delete('refreshToken');
+response.cookies.delete('accessToken')
+response.cookies.delete('refreshToken')
 ```
 
 ## 🧪 Testing
@@ -152,7 +152,7 @@ response.cookies.delete('refreshToken');
 
    ```typescript
    // In src/lib/jwt.ts
-   signAccessToken({ id: user.id }, { expiresIn: '10s' });
+   signAccessToken({ id: user.id }, { expiresIn: '10s' })
    ```
 
 3. **Try to access any protected page**
@@ -197,14 +197,14 @@ response.cookies.delete('refreshToken');
 export function signAccessToken(payload: any) {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET!, {
     expiresIn: '1d', // Change this: '15m', '1h', '7d', etc.
-  });
+  })
 }
 
 // Refresh token - how long before must login again
 export function signRefreshToken(payload: any) {
   return jwt.sign(payload, REFRESH_TOKEN_SECRET!, {
     expiresIn: '7d', // Change this: '30d', '90d', etc.
-  });
+  })
 }
 ```
 
@@ -216,10 +216,10 @@ export function signRefreshToken(payload: any) {
 // Change redirect URL when token expires
 if (response.status === 401 && errorData?.code === 'TOKEN_EXPIRED') {
   if (typeof window !== 'undefined') {
-    const locale = window.location.pathname.split('/')[1] || 'en';
+    const locale = window.location.pathname.split('/')[1] || 'en'
 
     // Option 1: Redirect to login
-    window.location.href = `/${locale}/login?expired=true`;
+    window.location.href = `/${locale}/login?expired=true`
 
     // Option 2: Redirect to home
     // window.location.href = `/${locale}?expired=true`;
@@ -298,8 +298,8 @@ console.log("Token verification error:", error);
 
 ```typescript
 // In API route
-response.cookies.delete('accessToken');
-response.cookies.delete('refreshToken');
+response.cookies.delete('accessToken')
+response.cookies.delete('refreshToken')
 
 // Verify in Network tab → Response Headers:
 // Set-Cookie: accessToken=; Path=/; Max-Age=0
@@ -311,8 +311,8 @@ response.cookies.delete('refreshToken');
 
 ```typescript
 // Login component
-const searchParams = useSearchParams();
-const isExpired = searchParams?.get('expired') === 'true';
+const searchParams = useSearchParams()
+const isExpired = searchParams?.get('expired') === 'true'
 
 // URL should be: /en/login?expired=true
 ```
