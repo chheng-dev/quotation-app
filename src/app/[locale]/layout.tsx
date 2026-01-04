@@ -1,6 +1,6 @@
-import { Provider } from '@/src/providers';
 import enMessages from '@/src/message/en.json';
 import kmMessages from '@/src/message/km.json';
+import { Provider } from '@/src/providers';
 
 const messagesMap = { en: enMessages, km: kmMessages };
 

@@ -1,8 +1,8 @@
-import { BaseModel } from './baseModel';
-import { userRoles, users } from '../lib/db/schema';
+import bcrypt from 'bcryptjs';
 import { and, eq } from 'drizzle-orm';
 import { db } from '../lib/db';
-import bcrypt from 'bcryptjs';
+import { userRoles, users } from '../lib/db/schema';
+import { BaseModel } from './baseModel';
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -21,17 +21,27 @@ export class UserModel extends BaseModel<User> {
   }
 
   async beforeCreate(data: Partial<User>): Promise<Partial<User>> {
-    const emailExists = await userModel.findByEmail(data.email!);
-    if (emailExists) throw new Error('Email already in use');
+    if (data.name) {
+      const nameExists = await this.findOne({ name: data.name! } as Partial<User>);
+      if (nameExists) throw new Error('Name is already in use');
+    }
+    if (data.email) {
+      const emailExists = await this.findByEmail(data.email!);
+      if (emailExists) throw new Error('Email already in use');
+    }
+    if (data.code) {
+      const codeExists = await this.findByCode(data.code!);
+      if (codeExists) throw new Error('Code is already in use');
+    }
 
-    const nameExists = await userModel.findOne({ name: data.name! } as Partial<User>);
-    if (nameExists) throw new Error('Name is already in use');
+    return data;
+  }
 
-    const codeExists = await userModel.findByCode(data.code!);
-    if (codeExists) throw new Error('Code is already in use');
-
-    const email = await userModel.findByEmail(data.email!);
-    if (email) throw new Error('Email already in use');
+  async beforeUpdate(data: Partial<User>): Promise<Partial<User>> {
+    const user = await this.findByCode(data.code!);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
     return data;
   }
@@ -40,7 +50,7 @@ export class UserModel extends BaseModel<User> {
    * Create a new user with hashed password
    */
   async createUser(
-    data: Omit<NewUser, 'passwordHash' | 'passwordConfirmation'> & { password: string },
+    data: NewUser & { password: string },
   ): Promise<User> {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(data.password, saltRounds);
@@ -52,7 +62,8 @@ export class UserModel extends BaseModel<User> {
       passwordConfirmation,
     };
 
-    return await this.create(userData);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return await this.create(userData as any);
   }
 
   /**

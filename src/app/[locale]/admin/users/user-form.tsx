@@ -1,9 +1,11 @@
 'use client';
 
 import {
-  userSchema,
+  userCreateSchema,
+  userUpdateSchema,
   type UserFormSchema,
   type UserSchema,
+  type UserUpdateFormSchema,
 } from '@/src/components/form-schema/user-schema';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { DatePicker } from '@/src/components/ui/date-picker';
@@ -34,13 +36,18 @@ import { useForm } from 'react-hook-form';
 type Props = {
   onSubmit: (values: UserSchema, reset: () => void) => Promise<void>;
   defaultValues?: Partial<UserSchema>;
+  mode?: 'create' | 'update';
 };
 
-export type UserFormRef = FormRef<UserFormSchema>;
+export type UserFormRef = FormRef<UserFormSchema | UserUpdateFormSchema>;
 
-const UserForm = React.forwardRef<UserFormRef, Props>(({ onSubmit, defaultValues }, ref) => {
-  const form = useForm<UserFormSchema>({
-    resolver: zodResolver(userSchema),
+const UserForm = React.forwardRef<UserFormRef, Props>(({ onSubmit, defaultValues, mode }, ref) => {
+  // Determine mode: if defaultValues exist, it's update mode; otherwise create mode
+  const formMode = mode || (defaultValues ? 'update' : 'create');
+  const schema = formMode === 'create' ? userCreateSchema : userUpdateSchema;
+  
+  const form = useForm<UserFormSchema | UserUpdateFormSchema>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: defaultValues?.name || '',
       email: defaultValues?.email || '',
@@ -54,7 +61,7 @@ const UserForm = React.forwardRef<UserFormRef, Props>(({ onSubmit, defaultValues
     },
   });
 
-  const transformValues = (values: UserFormSchema): UserSchema => {
+  const transformValues = (values: UserFormSchema | UserUpdateFormSchema): UserSchema => {
     return {
       ...(defaultValues?.id && { id: defaultValues.id }),
       name: values.name,
@@ -62,8 +69,8 @@ const UserForm = React.forwardRef<UserFormRef, Props>(({ onSubmit, defaultValues
       code: values.code,
       phoneNumber: values.phoneNumber || undefined,
       dob: values.dob || undefined,
-      isActive: values.isActive,
-      isAdmin: values.isAdmin,
+      isActive: values.isActive ?? true,
+      isAdmin: values.isAdmin ?? false,
       ...(values.password && { password: values.password }),
     };
   };
@@ -175,7 +182,10 @@ const UserForm = React.forwardRef<UserFormRef, Props>(({ onSubmit, defaultValues
                   <FormItem>
                     <FormLabel>Active User</FormLabel>
                     <FormControl>
-                      <StatusCombobox defaultValue={field.value ? 'active' : 'inactive'} />
+                      <StatusCombobox 
+                        value={field.value ? 'active' : 'inactive'}
+                        onValueChange={(value) => field.onChange(value === 'active')}
+                      />
                     </FormControl>
                   </FormItem>
                 )}

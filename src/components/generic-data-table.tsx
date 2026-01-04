@@ -1,6 +1,8 @@
 'use client';
 
-import * as React from 'react';
+import {
+  IconLayoutColumns
+} from '@tabler/icons-react';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,16 +15,18 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  useReactTable
 } from '@tanstack/react-table';
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconLayoutColumns,
-} from '@tabler/icons-react';
+import * as React from 'react';
 
+import { Button } from '@/src/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from '@/src/components/ui/dropdown-menu';
+import { Input } from '@/src/components/ui/input';
 import {
   Table,
   TableBody,
@@ -31,15 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/src/components/ui/table';
-import { Button } from '@/src/components/ui/button';
-import { Input } from '@/src/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/src/components/ui/dropdown-menu';
 import { Card, CardContent } from './ui/card';
+import { Skeleton } from './ui/skeleton';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -47,6 +44,8 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   isCustomColumnsVisible?: boolean;
+  isLoading?: boolean;
+  actions?: React.ReactNode;
 }
 
 export function GenericDataTable<TData, TValue>({
@@ -55,6 +54,8 @@ export function GenericDataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = 'Search...',
   isCustomColumnsVisible = false,
+  isLoading = false,
+  actions
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -64,6 +65,34 @@ export function GenericDataTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  //   if (actions) {
+  //     cols.push({
+  //       id: "actions",
+  //       header: () => <div className="text-right">Actions</div>,
+  //       cell: (context: CellContext<TData, any>) => {
+  //         const row = context.row;
+  //         return (
+  //           <div className="text-right" onClick={(e) => e.stopPropagation()}>
+  //             <DropdownMenu>
+  //               <DropdownMenuTrigger asChild>
+  //                 <Button variant="ghost" className="h-8 w-8 p-0">
+  //                   <span className="sr-only">Open menu</span>
+  //                   <MoreHorizontal className="h-4 w-4" />
+  //                 </Button>
+  //               </DropdownMenuTrigger>
+  //               <DropdownMenuContent align="end">
+  //                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
+  //                 <DropdownMenuSeparator />
+  //                 {actions}
+  //               </DropdownMenuContent>
+  //             </DropdownMenu>
+  //           </div>
+  //         );
+  //       },
+  //     } as ColumnDef<TData, TValue>);
+  //   }
+  // });
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -89,6 +118,20 @@ export function GenericDataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+
+  const skeletonRows = Array.from({ length: pagination.pageSize }).map((_, rowIndex) => (
+    <TableRow key={`skeleton-${rowIndex}`} className="hover:bg-transparent">
+      {columns.map((column, colIndex) => (
+        <TableCell
+          key={`skeleton-${rowIndex}-${colIndex}`}  colSpan={(column as any).size ?? 1}
+          className="px-6 py-4"
+        >
+          <Skeleton className="h-4 w-full max-w-[200px]" />
+        </TableCell>
+      ))}
+    </TableRow>
+  ));  
 
   return (
     <Card>
@@ -141,7 +184,7 @@ export function GenericDataTable<TData, TValue>({
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id}>
+                        <TableHead key={header.id} className="font-semibold">
                           {header.isPlaceholder
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}
@@ -152,7 +195,9 @@ export function GenericDataTable<TData, TValue>({
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
+                {isLoading ? (
+                  skeletonRows
+                ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                       {row.getVisibleCells().map((cell) => (
@@ -172,74 +217,6 @@ export function GenericDataTable<TData, TValue>({
               </TableBody>
             </Table>
           </div>
-
-          {/* Pagination */}
-          {/* <div className="flex items-center justify-between px-2">
-            <div className="flex-1 text-sm text-muted-foreground">
-              {table.getFilteredSelectedRowModel().rows.length} of{" "}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
-            <div className="flex items-center space-x-6 lg:space-x-8">
-              <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Rows per page</p>
-                <select
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e) => {
-                    table.setPageSize(Number(e.target.value))
-                  }}
-                  className="h-8 w-[70px] rounded-md border border-input bg-background px-2 text-sm"
-                >
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
-                      {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to first page</span>
-                  <IconChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to previous page</span>
-                  <IconChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to next page</span>
-                  <IconChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to last page</span>
-                  <IconChevronsRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div> */}
         </div>
       </CardContent>
     </Card>

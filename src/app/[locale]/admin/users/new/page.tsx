@@ -1,31 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { UserSchema } from '@/src/components/form-schema/user-schema';
+import { useCreateUser } from '@/src/hooks/use-user';
+import { useRef } from 'react';
+import { toast } from 'sonner';
 import PageLayout from '../../shared/page-layout';
 import UserForm, { UserFormRef } from '../user-form';
-import { toast } from 'sonner';
-import { useRef, useState } from 'react';
 
 export default function NewUserPage() {
-  const [loading, setLoading] = useState(false);
   const formRef = useRef<UserFormRef>(null);
+  const { mutateAsync: createUser } = useCreateUser();
 
   const onSubmit = async (data: UserSchema, reset: () => void) => {
-    try {
-      setLoading(true);
-      console.log('Form submitted:', data);
-
-      toast.success('User created successfully!');
-      reset();
-    } catch (error) {
-      console.error('Error creating user:', error);
-      toast.error('Failed to create user. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    createUser(
+      data as any, 
+      {
+        onSuccess: () => {
+          toast.success('User created successfully!');
+          reset();
+        },
+        onError: (error) => {
+          toast.error(error?.message || "Created failed");
+        },
+      } 
+    );
   };
 
   const handleSubmit = () => {
-    if (formRef.current && !loading) {
+    if (formRef.current) {
       formRef.current.submit();
     }
   };
@@ -33,14 +35,14 @@ export default function NewUserPage() {
   return (
     <PageLayout
       title="Create New User"
-      btnLabel="Create User"
+      btnLabel="Save changes"
       requiresAuth={{
         resource: 'users',
         action: 'create',
       }}
       onSubmit={handleSubmit}
     >
-      <UserForm ref={formRef} onSubmit={onSubmit} />
+      <UserForm ref={formRef} onSubmit={onSubmit} mode="create" />
     </PageLayout>
   );
 }
