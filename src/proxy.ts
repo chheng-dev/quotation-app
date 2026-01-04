@@ -23,7 +23,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  const protectedPaths = ['/admin', '/profile', '/warehouse'];
+  const protectedPaths = ['/admin', '/profile'];
   const isProtectedPath = protectedPaths.some((path) => pathWithoutLocale.startsWith(path));
   const authPaths = ['/login', '/register'];
   const isAuthPath = authPaths.some((path) => pathWithoutLocale === path);

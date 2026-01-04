@@ -1,100 +1,149 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { GenericDataTable } from '@/src/components/generic-data-table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/src/components/ui/avatar';
+import { Button } from '@/src/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/src/components/ui/tooltip';
+import { useDeleteUser } from '@/src/hooks/use-user';
+import { User } from '@/src/models/userModel';
+import { useAlertDialog } from '@/src/providers/alert-dialog-provider';
 import { ColumnDef } from '@tanstack/react-table';
+import { FilePenLine, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-interface UserItem {
-  id: string;
-  name: string;
-  src: string;
-  fallback: string;
-  email: string;
-  location: string;
-  status: string;
-  balance: string;
+interface TableUserProps {
+  items: User[];
+  isLoading: boolean;
 }
 
-const columns: ColumnDef<UserItem>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }) => {
-      const item = row.original;
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={item.src} alt={item.fallback} />
-            <AvatarFallback className="text-xs">{item.fallback}</AvatarFallback>
-          </Avatar>
-          <div className="font-medium">{item.name}</div>
-        </div>
-      );
+const TableUser = ({ items, isLoading }: TableUserProps) => {
+  const router = useRouter();
+  const { mutateAsync: deleteUser } = useDeleteUser();
+  const { openDialog } = useAlertDialog();
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  const handleEdit = (code: string) => {
+    router.push(`/admin/users/${code}`);
+  };
+
+  const handleDeleteClick = (user: User) => {
+    openDialog({
+      title: 'Delete User',
+      description: `This action cannot be undone. This will permanently delete the user ${user?.name} and remove all associated data.`,
+      actionLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      variant: 'destructive',
+      onAction: () => handleDeleteConfirm(user),
+      onCancel: () => setUserToDelete(null),
+    });
+  };
+
+  const handleDeleteConfirm = async (user: User) => {
+    if (!user) return;
+
+    try {
+      await deleteUser(user.code);
+      toast.success('User deleted successfully!');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to delete user');
+    }
+  };
+
+  const columns: ColumnDef<User>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => {
+        const user = row.original;
+        const initials = user.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="font-medium">{user.name}</div>
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: 'email',
-    header: 'Email',
-  },
-  {
-    accessorKey: 'location',
-    header: 'Location',
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-  },
-  {
-    accessorKey: 'balance',
-    header: 'Balance',
-    cell: ({ row }) => <div className="text-right">{row.original.balance}</div>,
-  },
-];
+    {
+      accessorKey: 'email',
+      header: 'Email',
+    },
+    {
+      accessorKey: 'code',
+      header: 'Code',
+    },
+    {
+      accessorKey: 'phoneNumber',
+      header: 'Phone',
+      cell: ({ row }) => row.original.phoneNumber || '-',
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Status',
+      cell: ({ row }) => {
+        const isActive = row.original.isActive;
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {isActive ? 'Active' : 'Inactive'}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleEdit(user.code)}
+                >
+                  <FilePenLine className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit User</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteClick(user)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete User</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      },
+    },
+  ];
 
-const items: UserItem[] = [
-  {
-    id: '1',
-    name: 'Philip George',
-    src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png',
-    fallback: 'PG',
-    email: 'philipgeorge20@gmail.com',
-    location: 'Mumbai, India',
-    status: 'Active',
-    balance: '$10,696.00',
-  },
-  {
-    id: '2',
-    name: 'Tiana Curtis',
-    src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-2.png',
-    fallback: 'TC',
-    email: 'tiana12@yahoo.com',
-    location: 'New York, US',
-    status: 'applied',
-    balance: '$0.00',
-  },
-  {
-    id: '3',
-    name: 'Jaylon Donin',
-    src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png',
-    fallback: 'JD',
-    email: 'jaylon23d.@outlook.com',
-    location: 'Washington, US',
-    status: 'Active',
-    balance: '$569.00',
-  },
-  {
-    id: '4',
-    name: 'Kim Yim',
-    src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png',
-    fallback: 'KY',
-    email: 'kim96@gmail.com',
-    location: 'Busan, South Korea',
-    status: 'Inactive',
-    balance: '-$506.90',
-  },
-];
-
-const TableUser = () => {
   return (
     <div>
       <GenericDataTable
@@ -102,7 +151,27 @@ const TableUser = () => {
         data={items}
         searchKey="name"
         searchPlaceholder="Search users by name..."
+        isLoading={isLoading}
       />
+      {/* <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user{' '}
+              <strong>{userToDelete?.name}</strong> and remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog> */}
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import { db } from '../lib/db';
-import { eq, and, SQL, sql } from 'drizzle-orm';
+import { and, eq, SQL, sql } from 'drizzle-orm';
 import { PgTable } from 'drizzle-orm/pg-core';
+import { db } from '../lib/db';
 
 export type WhereCondition<T> = Partial<T> | SQL;
 export type OrderBy = { column: string; direction: 'asc' | 'desc' };
@@ -102,9 +102,25 @@ export class BaseModel<T extends Record<string, unknown>> {
   /**
    * Find all records
    */
-  async findAll(): Promise<T[]> {
-    const results = await db.select().from(this.table);
-    return results as T[];
+  async findAll(query?: any, limit: number = 10, page: number = 1): Promise<
+  { items: T[], pagination: { page: number, limit: number, total: number, totalPages: number } }> {
+    let queryBuilder: any = db.select().from(this.table);
+
+    if (query) {
+      queryBuilder = queryBuilder.where(this.buildWhereConditions(query));
+    }
+
+    const results = await queryBuilder.limit(limit || 10).offset((page - 1) * (limit || 10));
+
+    return {
+      items: results as T[],
+      pagination: {
+        page,
+        limit,
+        total: results.length,
+        totalPages: Math.ceil(results.length / (limit || 10)),
+      },
+    };
   }
 
   /**
@@ -199,9 +215,11 @@ export class BaseModel<T extends Record<string, unknown>> {
 
   /**
    * Soft delete (if isActive field exists)
-   */
-  async softDelete(id: number | string): Promise<T | null> {
-    return this.updateById(id, { isActive: false } as unknown as Partial<T>);
+   */ 
+  async softDelete(where: Partial<T>): Promise<T | null> {
+    const conditions = this.buildWhereConditions(where);
+    const result: any = await db.update(this.table).set({ isActive: false }).where(conditions).returning();
+    return result[0] as T;
   }
 
   /**

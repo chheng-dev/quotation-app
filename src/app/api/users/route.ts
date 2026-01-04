@@ -5,11 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export const GET = handleProtectedRoute(
   async () => {
     try {
-      const users = await userController.list();
-      return NextResponse.json({ users }, { status: 200 });
+      const result = await userController.list();
+      return NextResponse.json(result, { status: 200 });
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-      return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+      return NextResponse.json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch users',
+      }, { status: 400 });
     }
   },
   { permissions: [{ resource: 'users', action: 'read' }] },
@@ -17,9 +18,18 @@ export const GET = handleProtectedRoute(
 
 export const POST = handleProtectedRoute(
   async (req: NextRequest) => {
-    const { name, email, password } = await req.json();
-    const user = await userController.createUser({ name, email, password });
-    return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
+    try {
+      const body = await req.json();
+      const user = await userController.createUser(body);
+      return NextResponse.json({
+        message: 'User created successfully',
+        user
+      }, { status: 201 });
+    } catch (error) {
+      return NextResponse.json({ 
+        message: error instanceof Error ? error.message : 'Failed to create user',
+      }, { status: 400 });
+    }
   },
   { permissions: [{ resource: 'users', action: 'create' }] },
 );

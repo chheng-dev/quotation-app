@@ -1,8 +1,14 @@
-import { userModel } from '../models/userModel';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NewUser, User, userModel } from '../models/userModel';
 
 class UserController {
-  async list() {
-    const result = await userModel.findAll();
+  async findByCode(code: string) {
+    const result = await userModel.findByCode(code);
+    return result;
+  }
+
+  async list(query?: any, limit?: number, page?: number) {
+    const result = await userModel.findAll(query, limit, page);
     return result;
   }
 
@@ -11,8 +17,8 @@ class UserController {
     return result;
   }
 
-  async createUser(data: any) {
-    const result = await userModel.createUser(data);
+  async createUser(data: NewUser) {
+    const result = await userModel.createUser(data as any);
     return result;
   }
 
@@ -29,6 +35,20 @@ class UserController {
   async getCurrentUser(userId: number) {
     const me = await userModel.getCurrentUser(userId);
     return me;
+  }
+
+  async updateUser(code: string, data: Partial<User>) {
+    const result = await userModel.updateMany({ code }, data as any);
+    return result;
+  }
+
+  async deleteUser(code: string) {
+    const user = await userModel.findByCode(code);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const result = await userModel.softDelete({ code } as Partial<User>);
+    return result;
   }
 }
 

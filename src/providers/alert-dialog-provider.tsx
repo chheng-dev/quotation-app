@@ -1,5 +1,8 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+import { Loader2, X } from 'lucide-react';
+import React, { useContext, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -9,9 +12,6 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import { Button } from '../components/ui/button';
-import { cn } from '@/lib/utils';
-import { Loader2, X } from 'lucide-react';
-import React, { useContext, useState } from 'react';
 
 type AlertDialogProps = {
   title?: string;
@@ -158,7 +158,7 @@ export default function AlertDialogProvider({ children }: { children: React.Reac
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent
           className={cn(
-            'animate-in fade-in-0 zoom-in-95 p-5 sm:p-6 md:p-8 bg-white dark:bg-muted',
+            'animate-in fade-in-0 zoom-in-95 p-5 sm:p-6 md:p-3 bg-white dark:bg-muted',
             getSizeClass(),
             getDialogStyling(),
           )}
@@ -234,7 +234,7 @@ export default function AlertDialogProvider({ children }: { children: React.Reac
               onClick={handleAction}
               disabled={isLoading}
               className={cn(
-                'flex-1 transition-all duration-200 rounded-lg h-10 sm:h-11 px-6 sm:px-7 md:px-8 text-sm sm:text-base',
+                'flex-1 transition-all duration-200 h-10 sm:h-11 px-6 sm:px-7 md:px-8 text-sm sm:text-base',
                 getActionButtonClass(),
               )}
             >

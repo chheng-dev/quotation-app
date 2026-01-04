@@ -34,7 +34,7 @@ export default function HeaderSection({
           )}
           <h1 className="text-xl font-medium">{title}</h1>
         </div>
-        <Button variant="rounded" onClick={onSubmit}>
+        <Button variant="default" onClick={onSubmit}>
           {btnLabel}
         </Button>
       </div>

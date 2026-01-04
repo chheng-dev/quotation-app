@@ -8,13 +8,7 @@ export const GET = handleProtectedRoute(async (_req, user) => {
     }
     return NextResponse.json(
       {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          roles: user.roles || [],
-          permissions: user.permissions || [],
-        },
+        ...user,
         message: 'User info retrieved successfully',
       },
       { status: 200 },

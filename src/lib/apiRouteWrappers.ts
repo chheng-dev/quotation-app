@@ -9,9 +9,15 @@ export interface User {
   permissions?: { resource: string; action: string }[];
 }
 
+export interface ApiHandlerContext {
+  params?: Record<string, string | string[]>;
+  query?: Record<string, string | string[]>;
+  user?: User | null;
+}
+
 export type ApiHandler<T = unknown> = (
   req: NextRequest,
-  user?: User | null,
+  context: ApiHandlerContext
 ) => Promise<NextResponse<T>> | Promise<Response>;
 
 export interface ApiRouteOptions {
@@ -24,25 +30,26 @@ export const handleApiRoute = <T = unknown>(
   handler: ApiHandler<T>,
   options: ApiRouteOptions = {},
 ) => {
-  return async (req: NextRequest) => {
+  return async (req: NextRequest, { params }: { params?: Promise<Record<string, string>> | Record<string, string> } = {}) => {
     const { requireAuth = false, permissions = [] } = options;
-
     let user: User | null = null;
 
+    // Await params if it's a Promise (Next.js 15+)
+    const resolvedParams = params instanceof Promise ? await params : params;
+
+    // Extract query parameters
+    const url = new URL(req.url);
+    const query = Object.fromEntries(url.searchParams.entries());
+
     if (requireAuth) {
-      const allCookies = req.cookies.getAll();
       const token = req.cookies.get('accessToken')?.value;
 
       if (!token) {
         return NextResponse.json(
           {
             error: 'Unauthorized - No token',
-            debug: {
-              availableCookies: allCookies.map((c) => c.name),
-              expectedCookie: 'accessToken',
-            },
           },
-          { status: 401 },
+          { status: 401 }
         );
       }
 
@@ -53,7 +60,6 @@ export const handleApiRoute = <T = unknown>(
           return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
         }
 
-        // Fetch full user data with roles and permissions
         const userData = await authController.getUserWithPermissions(payload.id as number);
         if (!userData) {
           return NextResponse.json({ error: 'Unauthorized - User not found' }, { status: 401 });
@@ -61,50 +67,36 @@ export const handleApiRoute = <T = unknown>(
 
         user = userData;
       } catch (error) {
-        console.error('Token verification error:', error);
-
-        // Check if token is expired or invalid
         const err = error as Error & { code?: string };
         const isTokenExpired = err.code === 'TOKEN_EXPIRED' || err.message?.includes('expired');
         const isTokenInvalid =
           err.code === 'TOKEN_INVALID' || err.code === 'TOKEN_VERIFICATION_FAILED';
 
-        if (isTokenExpired || isTokenInvalid) {
-          // Clear cookies and return 401 with specific error code
-          const response = NextResponse.json(
-            {
-              error: 'Unauthorized',
-              code: isTokenExpired ? 'TOKEN_EXPIRED' : 'TOKEN_INVALID',
-              message: isTokenExpired
-                ? 'Your session has expired. Please login again.'
-                : 'Invalid authentication token.',
-            },
-            { status: 401 },
-          );
-
-          // Clear authentication cookies
-          response.cookies.delete('accessToken');
-          response.cookies.delete('refreshToken');
-
-          return response;
-        }
-
-        return NextResponse.json(
-          { error: 'Unauthorized - Token verification failed' },
-          { status: 401 },
+        const response = NextResponse.json(
+          {
+            error: 'Unauthorized',
+            code: isTokenExpired ? 'TOKEN_EXPIRED' : 'TOKEN_INVALID',
+            message: isTokenExpired
+              ? 'Your session has expired. Please login again.'
+              : 'Invalid authentication token.',
+          },
+          { status: 401 }
         );
+
+        response.cookies.delete('accessToken');
+        response.cookies.delete('refreshToken');
+
+        return response;
       }
 
       // Check permissions
       if (permissions.length > 0 && user?.permissions) {
-        const userPermissions = user.permissions;
-
         const hasAllPerms = permissions.every((requiredPerm) =>
-          userPermissions.some(
+          user!.permissions!.some(
             (userPerm) =>
               userPerm.resource === requiredPerm.resource &&
-              userPerm.action === requiredPerm.action,
-          ),
+              userPerm.action === requiredPerm.action
+          )
         );
 
         if (!hasAllPerms) {
@@ -113,14 +105,15 @@ export const handleApiRoute = <T = unknown>(
       }
     }
 
-    return handler(req, user);
+    // Call handler with user, params, and query
+    return handler(req, { user, params: resolvedParams, query });
   };
 };
 
 // Convenience wrappers
 export const handleProtectedRoute = <T = unknown>(
   handler: ApiHandler<T>,
-  options: ApiRouteOptions = {},
+  options: ApiRouteOptions = {}
 ) => handleApiRoute(handler, { ...options, requireAuth: true });
 
 export const handlePublicRoute = <T = unknown>(handler: ApiHandler<T>) =>

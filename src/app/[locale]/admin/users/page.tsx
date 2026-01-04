@@ -1,10 +1,12 @@
 'use client';
+import { useUsers } from '@/src/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import PageLayout from '../shared/page-layout';
 import TableUser from './table';
 
 export default function UserPage() {
   const router = useRouter();
+  const { data: userResponse, isLoading } = useUsers();
   return (
     <PageLayout
       title="User Management"
@@ -15,7 +17,10 @@ export default function UserPage() {
       }}
       onSubmit={() => router.push('/admin/users/new')}
     >
-      <TableUser />
+      <TableUser 
+        items={userResponse?.items || []}
+        isLoading={!userResponse || isLoading}
+      />
     </PageLayout>
   );
 }
