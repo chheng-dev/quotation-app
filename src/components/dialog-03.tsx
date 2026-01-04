@@ -1,9 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-import { AlertTriangleIcon } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
+import { Button } from '@/src/components/ui/button'
 import {
   Dialog,
   DialogClose,
@@ -13,7 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/src/components/ui/dialog'
+import { AlertTriangleIcon } from 'lucide-react'
 
 export default function Dialog02() {
   const [open, setOpen] = useState(true)

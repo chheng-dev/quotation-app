@@ -1,5 +1,7 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
+
 import {
   type Icon,
   IconDots,
@@ -35,6 +37,27 @@ export function NavDocuments({
   }[]
 }) {
   const { isMobile } = useSidebar()
+  const pathname = usePathname()
+
+  const isUrlActive = (url: string) => {
+    if (url === '#') return false
+
+    // Normalize pathname and url by stripping locale prefix (e.g., /en, /km)
+    const normalize = (p: string) => {
+      const match = p.match(/^\/([a-z]{2})(\/.*)?$/)
+      return match ? match[2] || '/' : p
+    }
+
+    const cleanedPathname = normalize(pathname)
+    const cleanedUrl = normalize(url)
+
+    // Match exact or hierarchical (e.g., /admin/users matches /admin/users/new)
+    return (
+      cleanedPathname === cleanedUrl ||
+      cleanedPathname.startsWith(cleanedUrl + '/') ||
+      pathname === url
+    )
+  }
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -42,7 +65,7 @@ export function NavDocuments({
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild isActive={isUrlActive(item.url)}>
               <a href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>

@@ -19,7 +19,9 @@ import { BookOpen, Settings2, SettingsIcon, UsersIcon } from 'lucide-react'
 import { filterSidebarItems } from '../app/utils/sidebar-permissions'
 import { useAuth } from '../hooks/use-auth'
 import { usePermissions } from '../hooks/use-permission'
+import { NavDocuments } from './nav-documents'
 import { NavMain } from './nav-main'
+import { NavSecondary } from './nav-secondary'
 import { NavUser } from './nav-user'
 import {
   Sidebar,
@@ -39,7 +41,6 @@ const getSidebarData = () => ({
       title: 'User Management',
       url: '#',
       icon: UsersIcon,
-      isActive: true,
       permission: { resource: 'users', action: 'read' },
       items: [
         {
@@ -128,7 +129,6 @@ const getSidebarData = () => ({
     {
       title: 'Capture',
       icon: IconCamera,
-      isActive: true,
       url: '#',
       permission: { resource: 'capture', action: 'read' },
       items: [
@@ -190,13 +190,11 @@ const getSidebarData = () => ({
       title: 'Get Help',
       url: '/help',
       icon: IconHelp,
-      // Public item
     },
     {
       title: 'Search',
       url: '/search',
       icon: IconSearch,
-      // Public item
     },
   ],
   documents: [
@@ -240,20 +238,34 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     return {
       user: authUser
         ? {
-            name: authUser.name,
-            email: authUser.email,
-            avatar: '/avatars/shadcn.jpg',
-          }
+          name: authUser.name,
+          email: authUser.email,
+          avatar: '/avatars/shadcn.jpg',
+        }
         : data.user,
       navMain: filterSidebarItems(
         data.navMain,
         permUser as any,
         canPerformAction,
       ),
+      navClouds: filterSidebarItems(
+        data.navClouds,
+        permUser as any,
+        canPerformAction,
+      ),
+      navSecondary: filterSidebarItems(
+        data.navSecondary,
+        permUser as any,
+        canPerformAction,
+      ),
+      documents: filterSidebarItems(
+        data.documents,
+        permUser as any,
+        canPerformAction,
+      ),
     }
   }, [authUser, permUser, canPerformAction])
 
-  // Don't show sidebar while loading permissions
   if (isLoading) {
     return (
       <Sidebar collapsible="offcanvas" {...props}>
@@ -264,7 +276,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           </div>
         </SidebarContent>
         <SidebarFooter>
-          <div className="h-10" /> {/* Placeholder for user */}
+          <div className="h-10" />
         </SidebarFooter>
       </Sidebar>
     )
@@ -272,11 +284,15 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        {/* You can add logo or header content here */}
-      </SidebarHeader>
+      <SidebarHeader></SidebarHeader>
       <SidebarContent>
-        <NavMain items={filteredData.navMain as any} />
+        <NavMain items={filteredData.navMain as any} label="Platform" />
+        <NavMain items={filteredData.navClouds as any} label="Capture" />
+        <NavDocuments items={filteredData.documents as any} />
+        <NavSecondary
+          items={filteredData.navSecondary as any}
+          className="mt-auto"
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={filteredData.user} />

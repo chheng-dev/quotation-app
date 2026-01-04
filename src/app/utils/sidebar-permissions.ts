@@ -7,7 +7,8 @@ import {
 } from '@/src/types/rbac'
 
 export interface SidebarItem {
-  title: string
+  title?: string
+  name?: string
   url: string
   icon?: React.ComponentType
   isActive?: boolean
