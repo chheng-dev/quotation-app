@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
 
 export async function POST() {
   try {
@@ -8,13 +8,13 @@ export async function POST() {
         message: 'Logout successful',
       },
       { status: 200 },
-    );
+    )
 
     // Delete cookies
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
+    response.cookies.delete('accessToken')
+    response.cookies.delete('refreshToken')
 
-    return response;
+    return response
   } catch (error: unknown) {
     return NextResponse.json(
       {
@@ -22,6 +22,6 @@ export async function POST() {
         message: (error as Error).message || 'Logout failed',
       },
       { status: 500 },
-    );
+    )
   }
 }

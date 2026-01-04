@@ -1,11 +1,18 @@
-import { eq, inArray } from 'drizzle-orm';
-import db from '../lib/db';
-import { permissions, Role, rolePermissions, roles, userRoles } from '../lib/db/schema';
-import { BaseModel } from './baseModel';
+import { eq, inArray } from 'drizzle-orm'
+
+import db from '../lib/db'
+import {
+  Role,
+  permissions,
+  rolePermissions,
+  roles,
+  userRoles,
+} from '../lib/db/schema'
+import { BaseModel } from './baseModel'
 
 export class RoleModel extends BaseModel<Role> {
   constructor() {
-    super(roles);
+    super(roles)
   }
 
   async getRolePermissions(roleIds: number[]) {
@@ -16,16 +23,19 @@ export class RoleModel extends BaseModel<Role> {
       })
       .from(rolePermissions)
       .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-      .where(inArray(rolePermissions.roleId, roleIds));
+      .where(inArray(rolePermissions.roleId, roleIds))
   }
 
   async attachRoleToUser(userId: number, roleId: number) {
-    return db.insert(userRoles).values({ userId, roleId }).onConflictDoNothing();
+    return db.insert(userRoles).values({ userId, roleId }).onConflictDoNothing()
   }
 
   async attachPermissionToRole(roleId: number, permissionId: number) {
-    return db.insert(rolePermissions).values({ roleId, permissionId }).onConflictDoNothing();
+    return db
+      .insert(rolePermissions)
+      .values({ roleId, permissionId })
+      .onConflictDoNothing()
   }
 }
 
-export const roleModel = new RoleModel();
+export const roleModel = new RoleModel()

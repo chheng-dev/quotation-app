@@ -1,11 +1,11 @@
-'use client';
-import PageLayout from "../shared/page-layout";
+'use client'
+import PageLayout from '../shared/page-layout'
 
 export default function RolesPage() {
   return (
     <PageLayout
-      title='Role Page'
-      btnLabel='New Role'
+      title="Role Page"
+      btnLabel="New Role"
       requiresAuth={{
         resource: 'roles',
         action: 'read',
@@ -13,5 +13,5 @@ export default function RolesPage() {
     >
       <h1>Role page</h1>
     </PageLayout>
-  );
+  )
 }

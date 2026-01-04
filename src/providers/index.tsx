@@ -1,20 +1,22 @@
-'use client';
+'use client'
 
-import { ThemeProvider } from 'next-themes';
-import { IntlProvider } from 'next-intl';
-import QueryProvider from './query-provider';
-import AlertDialogProvider from './alert-dialog-provider';
-import { AuthProvider } from '@/src/components/providers/auth-provider';
-import { Toaster } from 'sonner';
+import { IntlProvider } from 'next-intl'
+import { ThemeProvider } from 'next-themes'
+
+import { AuthProvider } from '@/src/components/providers/auth-provider'
+import { Toaster } from 'sonner'
+
+import AlertDialogProvider from './alert-dialog-provider'
+import QueryProvider from './query-provider'
 
 export function Provider({
   children,
   locale,
   messages,
 }: {
-  children: React.ReactNode;
-  locale: string;
-  messages: Record<string, string>;
+  children: React.ReactNode
+  locale: string
+  messages: Record<string, string>
 }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -29,5 +31,5 @@ export function Provider({
         </QueryProvider>
       </AlertDialogProvider>
     </ThemeProvider>
-  );
+  )
 }

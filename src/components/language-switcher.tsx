@@ -1,45 +1,48 @@
-'use client';
-import { useLocale } from 'next-intl';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import khFlag from '../app/assets/images/kh-flag.svg';
-import enFlag from '../app/assets/images/england-flag.svg';
-import Image from 'next/image';
-import { Button } from './ui/button';
+'use client'
+import { useLocale } from 'next-intl'
+import Image from 'next/image'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+
+import enFlag from '../app/assets/images/england-flag.svg'
+import khFlag from '../app/assets/images/kh-flag.svg'
+import { Button } from './ui/button'
 
 type LanguageSwitcherProps = {
-  isDashboard?: boolean;
-};
+  isDashboard?: boolean
+}
 
-export function LanguageSwitcher({ isDashboard = true }: LanguageSwitcherProps) {
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export function LanguageSwitcher({
+  isDashboard = true,
+}: LanguageSwitcherProps) {
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const handleToggleLanguage = () => {
-    const newLocale = locale === 'en' ? 'km' : 'en';
+    const newLocale = locale === 'en' ? 'km' : 'en'
 
-    let cleanPath = pathname;
-    const locales = ['en', 'km'];
+    let cleanPath = pathname
+    const locales = ['en', 'km']
 
     for (const loc of locales) {
       if (cleanPath.startsWith(`/${loc}/`)) {
-        cleanPath = cleanPath.substring(`/${loc}`.length);
-        break;
+        cleanPath = cleanPath.substring(`/${loc}`.length)
+        break
       } else if (cleanPath === `/${loc}`) {
-        cleanPath = '/';
-        break;
+        cleanPath = '/'
+        break
       }
     }
 
     if (!cleanPath.startsWith('/')) {
-      cleanPath = '/' + cleanPath;
+      cleanPath = '/' + cleanPath
     }
 
-    const queryString = searchParams.toString();
-    const newPath = `/${newLocale}${cleanPath}${queryString ? `?${queryString}` : ''}`;
-    router.push(newPath);
-  };
+    const queryString = searchParams.toString()
+    const newPath = `/${newLocale}${cleanPath}${queryString ? `?${queryString}` : ''}`
+    router.push(newPath)
+  }
 
   const languages = {
     en: {
@@ -54,9 +57,10 @@ export function LanguageSwitcher({ isDashboard = true }: LanguageSwitcherProps) 
       nativeName: 'ខ្មែរ',
       code: 'KM',
     },
-  };
+  }
 
-  const currentLanguage = languages[locale as keyof typeof languages] || languages.en;
+  const currentLanguage =
+    languages[locale as keyof typeof languages] || languages.en
 
   return (
     <Button
@@ -88,5 +92,5 @@ export function LanguageSwitcher({ isDashboard = true }: LanguageSwitcherProps) 
 
       <div className="absolute inset-0 bg-primary/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10"></div>
     </Button>
-  );
+  )
 }

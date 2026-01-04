@@ -34,13 +34,13 @@ The `ApiClient` in `src/lib/api-client.ts` automatically handles:
 
 ```typescript
 // Login - POST /api/login
-await authApi.login({ email: 'user@example.com', password: 'password123' });
+await authApi.login({ email: 'user@example.com', password: 'password123' })
 
 // Get current user - GET /api/me
-await authApi.getMe();
+await authApi.getMe()
 
 // Logout - POST /api/logout
-await authApi.logout();
+await authApi.logout()
 ```
 
 ## Same-Origin vs Cross-Origin

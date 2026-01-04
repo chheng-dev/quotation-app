@@ -1,20 +1,23 @@
-'use client';
+'use client'
 
-import { useTheme } from 'next-themes';
-import React, { useEffect } from 'react';
-import { Button } from './ui/button';
-import { Sun, Moon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect } from 'react'
+
+import { useTheme } from 'next-themes'
+
+import { AnimatePresence, motion } from 'framer-motion'
+import { Moon, Sun } from 'lucide-react'
+
+import { Button } from './ui/button'
 
 export default function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
 
-  const isLight = theme === 'light';
+  const isLight = theme === 'light'
 
   return (
     <Button
@@ -36,5 +39,5 @@ export default function ThemeToggle() {
         </motion.div>
       </AnimatePresence>
     </Button>
-  );
+  )
 }

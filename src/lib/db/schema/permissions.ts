@@ -1,6 +1,7 @@
-import { relations } from 'drizzle-orm';
-import { pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
-import { rolePermissions } from './role_permissions';
+import { relations } from 'drizzle-orm'
+import { pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core'
+
+import { rolePermissions } from './role_permissions'
 
 export const permissions = pgTable('permissions', {
   id: serial('id').primaryKey(),
@@ -9,8 +10,8 @@ export const permissions = pgTable('permissions', {
   description: varchar('description', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+})
 
 export const permissionsRelations = relations(permissions, ({ many }) => ({
   roles: many(rolePermissions),
-}));
+}))

@@ -1,6 +1,7 @@
-import { authController } from '@/src/controllers/authController';
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+
+import { authController } from '@/src/controllers/authController'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,8 +12,11 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials) return null;
-        const result = await authController.login(credentials.username, credentials.password);
+        if (!credentials) return null
+        const result = await authController.login(
+          credentials.username,
+          credentials.password,
+        )
         return result
           ? {
               id: result.user.id.toString(),
@@ -21,7 +25,7 @@ export const authOptions: NextAuthOptions = {
               roles: result.roles.filter((r): r is number => r !== null),
               permissions: result.permissions,
             }
-          : null;
+          : null
       },
     }),
   ],
@@ -32,23 +36,23 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.roles = user.roles;
-        token.permissions = user.permissions;
+        token.id = user.id
+        token.roles = user.roles
+        token.permissions = user.permissions
       }
-      return token;
+      return token
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = Number(token.id);
-        session.user.roles = token.roles;
-        session.user.permissions = token.permissions;
+        session.user.id = Number(token.id)
+        session.user.roles = token.roles
+        session.user.permissions = token.permissions
       }
-      return session;
+      return session
     },
   },
   pages: {
     signIn: '/auth/login',
     error: '/auth/error',
   },
-};
+}
