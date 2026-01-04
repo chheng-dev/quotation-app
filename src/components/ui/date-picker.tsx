@@ -1,27 +1,28 @@
-'use client';
+'use client'
 
-import { CalendarIcon } from 'lucide-react';
-import * as React from 'react';
+import * as React from 'react'
 
-import formatDate, { parseDate } from '../../app/utils/date-format';
-import { Button } from './button';
-import { Calendar } from './calendar';
-import { Input } from './input';
-import { Label } from './label';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { CalendarIcon } from 'lucide-react'
+
+import formatDate, { parseDate } from '../../app/utils/date-format'
+import { Button } from './button'
+import { Calendar } from './calendar'
+import { Input } from './input'
+import { Label } from './label'
+import { Popover, PopoverContent, PopoverTrigger } from './popover'
 
 function isValidDate(date: Date | undefined) {
-  return !!date && !isNaN(date.getTime());
+  return !!date && !isNaN(date.getTime())
 }
 
 type Props = {
-  value?: string | Date;
-  onChange: (date: Date) => void;
-  dateLabel?: string;
-  className?: string;
-  placeholder?: string;
-  isRequired?: boolean;
-};
+  value?: string | Date
+  onChange: (date: Date) => void
+  dateLabel?: string
+  className?: string
+  placeholder?: string
+  isRequired?: boolean
+}
 
 export function DatePicker({
   value,
@@ -32,69 +33,70 @@ export function DatePicker({
   isRequired = false,
 }: Props) {
   const parsedDate = React.useMemo(() => {
-    if (!value) return undefined;
+    if (!value) return undefined
 
     try {
       if (value instanceof Date) {
-        return isValidDate(value) ? value : undefined;
+        return isValidDate(value) ? value : undefined
       }
 
       if (typeof value === 'string') {
-        const date = new Date(value);
-        return isValidDate(date) ? date : undefined;
+        const date = new Date(value)
+        return isValidDate(date) ? date : undefined
       }
 
-      return undefined;
+      return undefined
     } catch (error) {
-      console.warn('Date parsing error:', error);
-      return undefined;
+      console.warn('Date parsing error:', error)
+      return undefined
     }
-  }, [value]);
+  }, [value])
 
-  const validDate = parsedDate && isValidDate(parsedDate) ? parsedDate : new Date();
+  const validDate =
+    parsedDate && isValidDate(parsedDate) ? parsedDate : new Date()
 
-  const [lastValidDate, setLastValidDate] = React.useState<Date>(validDate);
-  const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState(formatDate(validDate));
-  const [month, setMonth] = React.useState<Date | undefined>(validDate);
+  const [lastValidDate, setLastValidDate] = React.useState<Date>(validDate)
+  const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState(formatDate(validDate))
+  const [month, setMonth] = React.useState<Date | undefined>(validDate)
 
   React.useEffect(() => {
     if (isValidDate(parsedDate)) {
-      setInputValue(formatDate(parsedDate));
-      if (parsedDate) setLastValidDate(parsedDate);
-      setMonth(parsedDate);
+      setInputValue(formatDate(parsedDate))
+      if (parsedDate) setLastValidDate(parsedDate)
+      setMonth(parsedDate)
     }
-  }, [parsedDate, value]);
+  }, [parsedDate, value])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    const newDate = parseDate(e.target.value);
+    setInputValue(e.target.value)
+    const newDate = parseDate(e.target.value)
     if (isValidDate(newDate)) {
-      if (newDate) setLastValidDate(newDate);
-      if (newDate) onChange(newDate);
+      if (newDate) setLastValidDate(newDate)
+      if (newDate) onChange(newDate)
     }
-  };
+  }
 
   const handleBlur = () => {
-    const currentDate = parseDate(inputValue);
+    const currentDate = parseDate(inputValue)
     if (!isValidDate(currentDate)) {
       // Revert to last valid date, not just prop value
-      setInputValue(formatDate(lastValidDate));
+      setInputValue(formatDate(lastValidDate))
     } else {
-      setInputValue(formatDate(currentDate));
-      if (currentDate) setLastValidDate(currentDate);
-      if (currentDate) onChange(currentDate);
+      setInputValue(formatDate(currentDate))
+      if (currentDate) setLastValidDate(currentDate)
+      if (currentDate) onChange(currentDate)
     }
-  };
+  }
 
   const handleCalendarSelect = (selectedDate: Date | undefined) => {
     if (selectedDate && isValidDate(selectedDate)) {
-      setLastValidDate(selectedDate);
-      setInputValue(formatDate(selectedDate));
-      onChange(selectedDate);
-      setOpen(false);
+      setLastValidDate(selectedDate)
+      setInputValue(formatDate(selectedDate))
+      onChange(selectedDate)
+      setOpen(false)
     }
-  };
+  }
 
   return (
     <div className="flex flex-col">
@@ -111,8 +113,8 @@ export function DatePicker({
           onBlur={handleBlur}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') {
-              e.preventDefault();
-              setOpen(true);
+              e.preventDefault()
+              setOpen(true)
             }
           }}
         />
@@ -146,5 +148,5 @@ export function DatePicker({
         </Popover>
       </div>
     </div>
-  );
+  )
 }

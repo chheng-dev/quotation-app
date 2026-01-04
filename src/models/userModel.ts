@@ -1,15 +1,16 @@
-import bcrypt from 'bcryptjs';
-import { and, eq } from 'drizzle-orm';
-import { db } from '../lib/db';
-import { userRoles, users } from '../lib/db/schema';
-import { BaseModel } from './baseModel';
+import bcrypt from 'bcryptjs'
+import { and, eq } from 'drizzle-orm'
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+import { db } from '../lib/db'
+import { userRoles, users } from '../lib/db/schema'
+import { BaseModel } from './baseModel'
+
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
 
 export class UserModel extends BaseModel<User> {
   constructor() {
-    super(users);
+    super(users)
   }
 
   async getUserRoles(userId: number) {
@@ -17,99 +18,102 @@ export class UserModel extends BaseModel<User> {
       .select()
       .from(userRoles)
       .where(eq(userRoles.userId, userId))
-      .orderBy(userRoles.roleId);
+      .orderBy(userRoles.roleId)
   }
 
   async beforeCreate(data: Partial<User>): Promise<Partial<User>> {
     if (data.name) {
-      const nameExists = await this.findOne({ name: data.name! } as Partial<User>);
-      if (nameExists) throw new Error('Name is already in use');
+      const nameExists = await this.findOne({
+        name: data.name!,
+      } as Partial<User>)
+      if (nameExists) throw new Error('Name is already in use')
     }
     if (data.email) {
-      const emailExists = await this.findByEmail(data.email!);
-      if (emailExists) throw new Error('Email already in use');
+      const emailExists = await this.findByEmail(data.email!)
+      if (emailExists) throw new Error('Email already in use')
     }
     if (data.code) {
-      const codeExists = await this.findByCode(data.code!);
-      if (codeExists) throw new Error('Code is already in use');
+      const codeExists = await this.findByCode(data.code!)
+      if (codeExists) throw new Error('Code is already in use')
     }
 
-    return data;
+    return data
   }
 
   async beforeUpdate(data: Partial<User>): Promise<Partial<User>> {
-    const user = await this.findByCode(data.code!);
+    const user = await this.findByCode(data.code!)
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    return data;
+    return data
   }
 
   /**
    * Create a new user with hashed password
    */
-  async createUser(
-    data: NewUser & { password: string },
-  ): Promise<User> {
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(data.password, saltRounds);
-    const passwordConfirmation = passwordHash; // Same as hash for confirmation
+  async createUser(data: NewUser & { password: string }): Promise<User> {
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(data.password, saltRounds)
+    const passwordConfirmation = passwordHash // Same as hash for confirmation
 
     const userData: NewUser = {
       ...data,
       passwordHash,
       passwordConfirmation,
-    };
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return await this.create(userData as any);
+    return await this.create(userData as any)
   }
 
   /**
    * Find user by email
    */
   async findByEmail(email: string): Promise<User | null> {
-    return await this.findOne({ email } as Partial<User>);
+    return await this.findOne({ email } as Partial<User>)
   }
 
   /**
    * Find user by code
    */
   async findByCode(code: string): Promise<User | null> {
-    return await this.findOne({ code } as Partial<User>);
+    return await this.findOne({ code } as Partial<User>)
   }
 
   /**
    * Verify user password
    */
   async verifyPassword(email: string, password: string): Promise<User | null> {
-    const user = await this.findByEmail(email);
+    const user = await this.findByEmail(email)
 
     if (!user) {
-      return null;
+      return null
     }
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
+    const isValid = await bcrypt.compare(password, user.passwordHash)
 
     if (!isValid) {
-      return null;
+      return null
     }
 
-    return user;
+    return user
   }
 
   /**
    * Update password
    */
-  async updatePassword(userId: number, newPassword: string): Promise<User | null> {
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+  async updatePassword(
+    userId: number,
+    newPassword: string,
+  ): Promise<User | null> {
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds)
 
     return await this.updateById(userId, {
       passwordHash,
       passwordConfirmation: passwordHash,
-    } as Partial<User>);
+    } as Partial<User>)
   }
 
   /**
@@ -119,7 +123,7 @@ export class UserModel extends BaseModel<User> {
     return await this.updateById(userId, {
       isActive: true,
       isVerified: true,
-    } as Partial<User>);
+    } as Partial<User>)
   }
 
   /**
@@ -128,14 +132,14 @@ export class UserModel extends BaseModel<User> {
   async deactivateUser(userId: number): Promise<User | null> {
     return await this.updateById(userId, {
       isActive: false,
-    } as Partial<User>);
+    } as Partial<User>)
   }
 
   /**
    * Get active users only
    */
   async findActiveUsers(): Promise<User[]> {
-    return await this.findMany({ isActive: true } as Partial<User>);
+    return await this.findMany({ isActive: true } as Partial<User>)
   }
 
   /**
@@ -145,15 +149,18 @@ export class UserModel extends BaseModel<User> {
     return await this.findMany({
       isActive: true,
       isVerified: true,
-    } as Partial<User>);
+    } as Partial<User>)
   }
 
   /**
    * Search users by name or email
    */
   async searchUsers(searchTerm: string): Promise<User[]> {
-    const results = await db.select().from(users).where(eq(users.name, searchTerm));
-    return results;
+    const results = await db
+      .select()
+      .from(users)
+      .where(eq(users.name, searchTerm))
+    return results
   }
 
   async getCurrentUser(userId: number): Promise<User | null> {
@@ -161,10 +168,10 @@ export class UserModel extends BaseModel<User> {
       .select()
       .from(users)
       .where(and(eq(users.id, userId), eq(users.isActive, true)))
-      .limit(1);
-    return result.length ? result[0] : null;
+      .limit(1)
+    return result.length ? result[0] : null
   }
 }
 
 // Export singleton instance
-export const userModel = new UserModel();
+export const userModel = new UserModel()

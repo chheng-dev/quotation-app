@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+'use client'
+
+import * as React from 'react'
 
 import {
   IconCamera,
@@ -11,15 +13,20 @@ import {
   IconReport,
   IconSearch,
   IconSettings,
-} from '@tabler/icons-react';
-import { BookOpen, Settings2, SettingsIcon, UsersIcon } from 'lucide-react';
-import * as React from 'react';
-import { filterSidebarItems } from '../app/utils/sidebar-permissions';
-import { useAuth } from '../hooks/use-auth';
-import { usePermissions } from '../hooks/use-permission';
-import { NavMain } from './nav-main';
-import { NavUser } from './nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from './ui/sidebar';
+} from '@tabler/icons-react'
+import { BookOpen, Settings2, SettingsIcon, UsersIcon } from 'lucide-react'
+
+import { filterSidebarItems } from '../app/utils/sidebar-permissions'
+import { useAuth } from '../hooks/use-auth'
+import { usePermissions } from '../hooks/use-permission'
+import { NavMain } from './nav-main'
+import { NavUser } from './nav-user'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+} from './ui/sidebar'
 
 const getSidebarData = () => ({
   user: {
@@ -212,23 +219,23 @@ const getSidebarData = () => ({
       permission: { resource: 'assistant', action: 'use' },
     },
   ],
-});
+})
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user?: {
-    id: number;
-    name: string;
-    email: string;
-    roles?: number[];
-    permissions?: { resource: string; action: string }[];
-  } | null;
+    id: number
+    name: string
+    email: string
+    roles?: number[]
+    permissions?: { resource: string; action: string }[]
+  } | null
 }
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
-  const { user: authUser } = useAuth();
-  const { user: permUser, canPerformAction, isLoading } = usePermissions();
+  const { user: authUser } = useAuth()
+  const { user: permUser, canPerformAction, isLoading } = usePermissions()
 
   const filteredData = React.useMemo(() => {
-    const data = getSidebarData();
+    const data = getSidebarData()
 
     return {
       user: authUser
@@ -238,9 +245,13 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
             avatar: '/avatars/shadcn.jpg',
           }
         : data.user,
-      navMain: filterSidebarItems(data.navMain, permUser as any, canPerformAction),
-    };
-  }, [authUser, permUser, canPerformAction]);
+      navMain: filterSidebarItems(
+        data.navMain,
+        permUser as any,
+        canPerformAction,
+      ),
+    }
+  }, [authUser, permUser, canPerformAction])
 
   // Don't show sidebar while loading permissions
   if (isLoading) {
@@ -256,12 +267,14 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           <div className="h-10" /> {/* Placeholder for user */}
         </SidebarFooter>
       </Sidebar>
-    );
+    )
   }
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>{/* You can add logo or header content here */}</SidebarHeader>
+      <SidebarHeader>
+        {/* You can add logo or header content here */}
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={filteredData.navMain as any} />
       </SidebarContent>
@@ -269,5 +282,5 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         <NavUser user={filteredData.user} />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

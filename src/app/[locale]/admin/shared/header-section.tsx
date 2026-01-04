@@ -1,14 +1,15 @@
-'use client';
-import { Button } from '@/src/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+'use client'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/src/components/ui/button'
+import { ChevronLeft } from 'lucide-react'
 
 export interface HeaderSectionProps {
-  title?: string;
-  btnLabel?: string;
-  showBackButton?: boolean;
-  onBack?: () => void;
-  onSubmit?: () => void;
+  title?: string
+  btnLabel?: string
+  showBackButton?: boolean
+  onBack?: () => void
+  onSubmit?: () => void
 }
 
 export default function HeaderSection({
@@ -18,17 +19,21 @@ export default function HeaderSection({
   onBack,
   onSubmit,
 }: HeaderSectionProps) {
-  const router = useRouter();
+  const router = useRouter()
   const onBackDefault = () => {
-    router.back();
-  };
+    router.back()
+  }
 
   return (
     <header className="p-3 border-b border-input">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {showBackButton && (
-            <Button variant="ghost" size="icon" onClick={onBack || onBackDefault}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack || onBackDefault}
+            >
               <ChevronLeft />
             </Button>
           )}
@@ -39,5 +44,5 @@ export default function HeaderSection({
         </Button>
       </div>
     </header>
-  );
+  )
 }

@@ -77,29 +77,29 @@ No → Redirect to /unauthorized
 ### Protect a New Page
 
 ```tsx
-'use client';
+'use client'
 
-import { PermissionGuard } from '@/src/components/permission-guard';
+import { PermissionGuard } from '@/src/components/permission-guard'
 
 export default function YourPage() {
   return (
     <PermissionGuard resource="resource_name" action="read">
       {/* Your page content */}
     </PermissionGuard>
-  );
+  )
 }
 ```
 
 ### Hide/Show Features Based on Permission
 
 ```tsx
-'use client';
+'use client'
 
-import { usePermissions } from '@/src/hooks/use-permission';
-import { PermissionGuard } from '@/src/components/permission-guard';
+import { PermissionGuard } from '@/src/components/permission-guard'
+import { usePermissions } from '@/src/hooks/use-permission'
 
 export default function UsersPage() {
-  const { can } = usePermissions();
+  const { can } = usePermissions()
 
   return (
     <PermissionGuard resource="users" action="read">
@@ -113,7 +113,7 @@ export default function UsersPage() {
         {can('users', 'delete') && <button>Delete User</button>}
       </div>
     </PermissionGuard>
-  );
+  )
 }
 ```
 
@@ -165,18 +165,18 @@ export default function UsersPage() {
 
 ```typescript
 // In your API route
-import { getTokenFromCookiesWithUser } from '@/src/lib/jwt-server';
-import { canPerformAction } from '@/src/app/utils/permissions';
+import { canPerformAction } from '@/src/app/utils/permissions'
+import { getTokenFromCookiesWithUser } from '@/src/lib/jwt-server'
 
 export async function GET(req: Request) {
-  const result = await getTokenFromCookiesWithUser();
+  const result = await getTokenFromCookiesWithUser()
 
   if (!result?.user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   if (!canPerformAction(result.user, 'users', 'read')) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 });
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   // Your logic here

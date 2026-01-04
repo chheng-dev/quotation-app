@@ -1,41 +1,42 @@
-import bcrypt from 'bcryptjs';
-import { userModel } from '../models/userModel';
-import { roleModel } from '../models/roleModel';
+import bcrypt from 'bcryptjs'
+
 import {
   signAccessToken,
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
-} from '../lib/jwt';
+} from '../lib/jwt'
+import { roleModel } from '../models/roleModel'
+import { userModel } from '../models/userModel'
 
 export class AuthController {
   static async authorize(email: string, password: string) {
-    const user = await userModel.findByEmail(email);
-    if (!user) return null;
+    const user = await userModel.findByEmail(email)
+    if (!user) return null
 
-    const valid = await userModel.verifyPassword(email, password);
-    if (!valid) return null;
+    const valid = await userModel.verifyPassword(email, password)
+    if (!valid) return null
 
-    return user;
+    return user
   }
 
   static async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 10)
   }
 
   async login(email: string, password: string) {
-    const user = await userModel.findByEmail(email);
-    if (!user) throw new Error('Invalid credentials');
+    const user = await userModel.findByEmail(email)
+    if (!user) throw new Error('Invalid credentials')
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) throw new Error('Invalid credentials');
+    const isValid = await bcrypt.compare(password, user.passwordHash)
+    if (!isValid) throw new Error('Invalid credentials')
 
-    const userRolesRow = await userModel.getUserRoles(user.id);
-    const roleIds = userRolesRow.map((ur) => ur.roleId);
-    const permissions = await roleModel.getRolePermissions(roleIds as number[]);
+    const userRolesRow = await userModel.getUserRoles(user.id)
+    const roleIds = userRolesRow.map((ur) => ur.roleId)
+    const permissions = await roleModel.getRolePermissions(roleIds as number[])
 
-    const accessToken = signAccessToken({ id: user.id });
-    const refreshToken = signRefreshToken({ id: user.id });
+    const accessToken = signAccessToken({ id: user.id })
+    const refreshToken = signRefreshToken({ id: user.id })
 
     return {
       user,
@@ -43,45 +44,50 @@ export class AuthController {
       permissions,
       accessToken,
       refreshToken,
-    };
+    }
   }
 
   async logout(userId: string) {
     if (!userId) {
-      throw new Error('User ID is required for logout');
+      throw new Error('User ID is required for logout')
     }
     return {
       success: true,
       message: 'Logout successful',
-    };
+    }
   }
 
   async verifyAccessToken(token: string) {
-    const payload = verifyAccessToken(token);
-    return payload;
+    const payload = verifyAccessToken(token)
+    return payload
   }
 
   async verifyRefreshToken(token: string) {
-    const payload = verifyRefreshToken(token);
-    return payload;
+    const payload = verifyRefreshToken(token)
+    return payload
   }
 
   async getUserWithPermissions(userId: number) {
-    const user = await userModel.findById(userId);
-    if (!user) return null;
+    const user = await userModel.findById(userId)
+    if (!user) return null
 
-    const userRolesRow = await userModel.getUserRoles(userId);
-    const roleIds = userRolesRow.map((ur) => ur.roleId).filter((id): id is number => id !== null);
-    const permissions = await roleModel.getRolePermissions(roleIds);
+    const userRolesRow = await userModel.getUserRoles(userId)
+    const roleIds = userRolesRow
+      .map((ur) => ur.roleId)
+      .filter((id): id is number => id !== null)
+    const permissions = await roleModel.getRolePermissions(roleIds)
 
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       roles: roleIds,
-      permissions: permissions.map((p) => ({ resource: p.resource, action: p.action })),
-    };
+      permissions: permissions.map((p) => ({
+        resource: p.resource,
+        action: p.action,
+      })),
+    }
   }
 }
 
-export const authController = new AuthController();
+export const authController = new AuthController()

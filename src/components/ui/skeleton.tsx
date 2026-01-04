@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "./card";
+import { cn } from '@/lib/utils'
+
+import { Card, CardContent, CardHeader } from './card'
 
 function Skeleton({
   className,
@@ -7,39 +8,55 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      className={cn('animate-pulse rounded-md bg-muted', className)}
       {...props}
     />
-  );
+  )
 }
 
-function UserSkeleton ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function UserSkeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center gap-2 px-2 py-1.5", className)} {...props}>
+    <div
+      className={cn('flex items-center gap-2 px-2 py-1.5', className)}
+      {...props}
+    >
       <Skeleton className="h-8 w-8 rounded-full" />
       <div className="flex-1 space-y-1">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-3 w-32" />
       </div>
     </div>
-  );
+  )
 }
 
-function CardSkeleton({ fields = 3, className, ...props }: { fields?: number } & React.HTMLAttributes<HTMLDivElement>) {
+function CardSkeleton({
+  fields = 3,
+  className,
+  ...props
+}: { fields?: number } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("space-y-3 p-4 border rounded-lg", className)} {...props}>
+    <div
+      className={cn('space-y-3 p-4 border rounded-lg', className)}
+      {...props}
+    >
       {Array.from({ length: fields }).map((_, i) => {
-        const widthClasses = ["w-3/4", "w-1/2", "w-1/4", "w-1/6", "w-1/12"];
-        const widthClass = widthClasses[i] || "w-full";
-        return <Skeleton key={i} className={`h-4 ${widthClass}`} />;
+        const widthClasses = ['w-3/4', 'w-1/2', 'w-1/4', 'w-1/6', 'w-1/12']
+        const widthClass = widthClasses[i] || 'w-full'
+        return <Skeleton key={i} className={`h-4 ${widthClass}`} />
       })}
     </div>
-  );
+  )
 }
 
-function PageSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function PageSkeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("space-y-6", className)} {...props}>
+    <div className={cn('space-y-6', className)} {...props}>
       <div className="space-y-2">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-96" />
@@ -50,24 +67,26 @@ function PageSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function FormSkeleton({
   fields = 4,
-  headerWidth = "w-32",
-  fieldHeights = ["h-10", "h-10", "h-10", "h-10"],
-  fieldWidths = ["w-full", "w-full", "w-full", "w-full"],
+  headerWidth = 'w-32',
+  fieldHeights = ['h-10', 'h-10', 'h-10', 'h-10'],
+  fieldWidths = ['w-full', 'w-full', 'w-full', 'w-full'],
   showHeaderButtons = true,
-  className, ...props }: React.HTMLAttributes<HTMLDivElement> & {
-    fields?: number;
-    headerWidth?: string;
-    fieldHeights?: string[];
-    fieldWidths?: string[];
-    showHeaderButtons?: boolean;
-  }) {
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  fields?: number
+  headerWidth?: string
+  fieldHeights?: string[]
+  fieldWidths?: string[]
+  showHeaderButtons?: boolean
+}) {
   return (
-    <div className={cn("w-full space-y-4 p-4", className)} {...props}>
+    <div className={cn('w-full space-y-4 p-4', className)} {...props}>
       <div className="flex items-center justify-between mb-6">
         <Skeleton className="h-8 w-40" />
         {showHeaderButtons && (
@@ -87,19 +106,22 @@ function FormSkeleton({
             <div key={i} className="space-y-2">
               <Skeleton className="h-4 w-24" /> {/* Label */}
               <Skeleton
-                className={`${fieldHeights[i] || "h-10"} ${fieldWidths[i] || "w-full"}`}
+                className={`${fieldHeights[i] || 'h-10'} ${fieldWidths[i] || 'w-full'}`}
               />
             </div>
           ))}
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
-function TableSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function TableSkeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("space-8", className)} {...props}>
+    <div className={cn('space-8', className)} {...props}>
       <div className="flex items-center justify-between p-4">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-6 w-24" />
@@ -136,12 +158,21 @@ function TableSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElem
         <Skeleton className="h-6 w-24" />
       </div>
     </div>
-  );
+  )
 }
 
-function SidebarSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function SidebarSkeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex h-screen w-64 flex-col border-r bg-sidebar", className)} {...props}>
+    <div
+      className={cn(
+        'flex h-screen w-64 flex-col border-r bg-sidebar',
+        className,
+      )}
+      {...props}
+    >
       {/* Sidebar Content */}
       <div className="flex-1 overflow-auto p-2">
         <div className="space-y-2">
@@ -192,12 +223,15 @@ function SidebarSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
         <UserSkeleton />
       </div>
     </div>
-  );
+  )
 }
 
-function CardSkeletonQuestion({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function CardSkeletonQuestion({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("space-y-6", className)} {...props}>
+    <div className={cn('space-y-6', className)} {...props}>
       <Card className="border border-border/50 shadow-sm backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -252,12 +286,16 @@ function CardSkeletonQuestion({ className, ...props }: React.HTMLAttributes<HTML
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
-function TreeNodeSkeleton({ count = 2, className, ...props }: { count?: number } & React.HTMLAttributes<HTMLDivElement>) {
+function TreeNodeSkeleton({
+  count = 2,
+  className,
+  ...props
+}: { count?: number } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("w-full space-y-4 p-4", className)} {...props}>
+    <div className={cn('w-full space-y-4 p-4', className)} {...props}>
       {/* Header with buttons */}
       <div className="flex items-center justify-between mb-6">
         <Skeleton className="h-8 w-40" /> {/* Title */}
@@ -322,21 +360,33 @@ function TreeNodeSkeleton({ count = 2, className, ...props }: { count?: number }
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
-function AvatarSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function AvatarSkeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center gap-3", className)} {...props}>
+    <div className={cn('flex items-center gap-3', className)} {...props}>
       <Skeleton className="h-10 w-10 rounded-full" />
       <div className="space-y-1">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-3 w-48" />
       </div>
     </div>
-  );
+  )
 }
 
-
-export { AvatarSkeleton, CardSkeleton, CardSkeletonQuestion, FormSkeleton, PageSkeleton, SidebarSkeleton, Skeleton, TableSkeleton, TreeNodeSkeleton, UserSkeleton };
-
+export {
+  AvatarSkeleton,
+  CardSkeleton,
+  CardSkeletonQuestion,
+  FormSkeleton,
+  PageSkeleton,
+  SidebarSkeleton,
+  Skeleton,
+  TableSkeleton,
+  TreeNodeSkeleton,
+  UserSkeleton,
+}

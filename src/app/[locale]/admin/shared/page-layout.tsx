@@ -1,16 +1,18 @@
-import { PermissionGuard } from '@/src/components/permission-guard';
-import HeaderSection from './header-section';
-import { Fragment } from 'react/jsx-runtime';
+import { Fragment } from 'react/jsx-runtime'
+
+import { PermissionGuard } from '@/src/components/permission-guard'
+
+import HeaderSection from './header-section'
 
 interface PageLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
   requiresAuth: {
-    resource: string;
-    action: string;
-  };
-  btnLabel?: string;
-  title?: string;
-  onSubmit?: () => void;
+    resource: string
+    action: string
+  }
+  btnLabel?: string
+  title?: string
+  onSubmit?: () => void
 }
 
 export default function PageLayout({
@@ -21,7 +23,10 @@ export default function PageLayout({
   onSubmit,
 }: PageLayoutProps) {
   return (
-    <PermissionGuard resource={requiresAuth.resource} action={requiresAuth.action}>
+    <PermissionGuard
+      resource={requiresAuth.resource}
+      action={requiresAuth.action}
+    >
       <Fragment>
         <HeaderSection
           title={title}
@@ -32,5 +37,5 @@ export default function PageLayout({
         <div className="p-3">{children}</div>
       </Fragment>
     </PermissionGuard>
-  );
+  )
 }

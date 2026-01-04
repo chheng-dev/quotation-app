@@ -1,9 +1,13 @@
-'use client';
-import { AppSidebar } from '@/src/components/app-sidebar';
-import { SiteHeader } from '@/src/components/site-header';
-import { SidebarInset, SidebarProvider } from '@/src/components/ui/sidebar';
+'use client'
+import { AppSidebar } from '@/src/components/app-sidebar'
+import { SiteHeader } from '@/src/components/site-header'
+import { SidebarInset, SidebarProvider } from '@/src/components/ui/sidebar'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <SidebarProvider
       style={
@@ -19,5 +23,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }

@@ -1,20 +1,28 @@
-'use client';
+'use client'
 
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form'
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Label } from './ui/label';
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+import { Button } from './ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
-});
+})
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginForm() {
   const {
@@ -23,17 +31,19 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  });
+  })
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('form data -->', data);
-  };
+    console.log('form data -->', data)
+  }
 
   return (
     <Card className="w-full md:w-[350px] shadow-none">
       <CardHeader>
         <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
+        <CardDescription>
+          Enter your credentials to access your account
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -46,7 +56,11 @@ export default function LoginForm() {
               {...register('email')}
               aria-invalid={errors.email ? 'true' : 'false'}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -58,7 +72,9 @@ export default function LoginForm() {
               aria-invalid={errors.password ? 'true' : 'false'}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
         </form>
@@ -69,5 +85,5 @@ export default function LoginForm() {
         </Button>
       </CardFooter>
     </Card>
-  );
+  )
 }

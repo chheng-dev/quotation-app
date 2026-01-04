@@ -1,8 +1,11 @@
-'use client';
+'use client'
 
-import { cn } from '@/lib/utils';
-import { Loader2, X } from 'lucide-react';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState } from 'react'
+
+import { Loader2, X } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
 import {
   AlertDialog,
   AlertDialogContent,
@@ -10,148 +13,155 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../components/ui/alert-dialog';
-import { Button } from '../components/ui/button';
+} from '../components/ui/alert-dialog'
+import { Button } from '../components/ui/button'
 
 type AlertDialogProps = {
-  title?: string;
-  description?: string;
-  actionLabel?: string;
-  cancelLabel?: string;
-  onAction?: () => void;
-  onCancel?: () => void;
-  variant?: 'default' | 'destructive' | 'success' | 'warning';
-  icon?: React.ComponentType<{ className?: string }>;
-  size?: 'sm' | 'md' | 'lg';
-  showCloseButton?: boolean;
-  loading?: boolean;
-  hideCancel?: boolean;
-};
-
-type alertDialogContextType = {
-  openDialog: (options: AlertDialogProps) => void;
-};
-
-const AlertDialogContext = React.createContext<alertDialogContextType | undefined>(undefined);
-
-export function useAlertDialog() {
-  const ctx = useContext(AlertDialogContext);
-  if (!ctx) throw new Error('useAlertDialog must be used within an AlertDialogProvider');
-  return ctx;
+  title?: string
+  description?: string
+  actionLabel?: string
+  cancelLabel?: string
+  onAction?: () => void
+  onCancel?: () => void
+  variant?: 'default' | 'destructive' | 'success' | 'warning'
+  icon?: React.ComponentType<{ className?: string }>
+  size?: 'sm' | 'md' | 'lg'
+  showCloseButton?: boolean
+  loading?: boolean
+  hideCancel?: boolean
 }
 
-export default function AlertDialogProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = React.useState(false);
-  const [options, setOptions] = useState<AlertDialogProps>({});
-  const [isLoading, setIsLoading] = useState(false);
+type alertDialogContextType = {
+  openDialog: (options: AlertDialogProps) => void
+}
+
+const AlertDialogContext = React.createContext<
+  alertDialogContextType | undefined
+>(undefined)
+
+export function useAlertDialog() {
+  const ctx = useContext(AlertDialogContext)
+  if (!ctx)
+    throw new Error('useAlertDialog must be used within an AlertDialogProvider')
+  return ctx
+}
+
+export default function AlertDialogProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [options, setOptions] = useState<AlertDialogProps>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   const openDialog = (opts: AlertDialogProps) => {
-    setOptions(opts);
-    setOpen(true);
-    setIsLoading(false);
-  };
+    setOptions(opts)
+    setOpen(true)
+    setIsLoading(false)
+  }
 
   const handleAction = async () => {
     if (options.loading) {
-      setIsLoading(true);
+      setIsLoading(true)
     }
 
     try {
-      await options.onAction?.();
+      await options.onAction?.()
       if (!options.loading) {
-        setOpen(false);
+        setOpen(false)
       }
     } catch (error) {
-      console.error('Dialog action error:', error);
+      console.error('Dialog action error:', error)
     } finally {
       if (options.loading) {
-        setIsLoading(false);
-        setOpen(false);
+        setIsLoading(false)
+        setOpen(false)
       }
     }
-  };
+  }
 
   const handleCancel = () => {
-    setOpen(false);
-    options.onCancel?.();
-  };
+    setOpen(false)
+    options.onCancel?.()
+  }
 
   const getIconBackgroundClass = () => {
     switch (options.variant) {
       case 'success':
-        return 'bg-green-100 border border-green-200';
+        return 'bg-green-100 border border-green-200'
       case 'destructive':
-        return 'bg-red-50 border-0';
+        return 'bg-red-50 border-0'
       case 'warning':
-        return 'bg-yellow-100 border border-yellow-200';
+        return 'bg-yellow-100 border border-yellow-200'
       default:
-        return 'bg-blue-100 border border-blue-200';
+        return 'bg-blue-100 border border-blue-200'
     }
-  };
+  }
 
   const getIconColorClass = () => {
     switch (options.variant) {
       case 'success':
-        return 'text-green-600';
+        return 'text-green-600'
       case 'destructive':
-        return 'text-[#E57373]';
+        return 'text-[#E57373]'
       case 'warning':
-        return 'text-yellow-600';
+        return 'text-yellow-600'
       default:
-        return 'text-blue-600';
+        return 'text-blue-600'
     }
-  };
+  }
 
   const getActionButtonClass = () => {
     const baseClass =
-      'flex-1 transition-all duration-200 font-semibold rounded-lg h-10 sm:h-11 px-6 sm:px-7 md:px-8 text-sm sm:text-base';
+      'flex-1 transition-all duration-200 font-semibold rounded-lg h-10 sm:h-11 px-6 sm:px-7 md:px-8 text-sm sm:text-base'
     switch (options.variant) {
       case 'destructive':
         return cn(
           baseClass,
           'bg-red-500 text-white hover:bg-[#E53935] active:bg-[#D32F2F] focus:ring-2 focus:ring-[#EF5350]/30 focus:ring-offset-2',
-        );
+        )
       case 'success':
         return cn(
           baseClass,
           'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 focus:ring-2 focus:ring-green-500 focus:ring-offset-2',
-        );
+        )
       case 'warning':
         return cn(
           baseClass,
           'bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2',
-        );
+        )
       default:
         return cn(
           baseClass,
           'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-700 focus:ring-1 focus:ring-slate-500 focus:ring-offset-1',
-        );
+        )
     }
-  };
+  }
 
   const getSizeClass = () => {
     switch (options.size) {
       case 'sm':
-        return 'max-w-[90vw] sm:max-w-sm';
+        return 'max-w-[90vw] sm:max-w-sm'
       case 'lg':
-        return 'max-w-[90vw] sm:max-w-lg';
+        return 'max-w-[90vw] sm:max-w-lg'
       default:
-        return 'max-w-[90vw] sm:max-w-md';
+        return 'max-w-[90vw] sm:max-w-md'
     }
-  };
+  }
 
   const getDialogStyling = () => {
     switch (options.variant) {
       case 'destructive':
-        return 'border-0 shadow-2xl rounded-md sm:rounded-lg';
+        return 'border-0 shadow-2xl rounded-md sm:rounded-lg'
       case 'success':
-        return 'border-0 shadow-xl rounded-md sm:rounded-lg';
+        return 'border-0 shadow-xl rounded-md sm:rounded-lg'
       case 'warning':
-        return 'border-0 shadow-xl rounded-md sm:rounded-lg';
+        return 'border-0 shadow-xl rounded-md sm:rounded-lg'
       default:
-        return 'shadow-lg rounded-md sm:rounded-lg';
+        return 'shadow-lg rounded-md sm:rounded-lg'
     }
-  };
+  }
   return (
     <AlertDialogContext.Provider value={{ openDialog }}>
       {children}
@@ -184,13 +194,18 @@ export default function AlertDialogProvider({ children }: { children: React.Reac
                 )}
               >
                 <options.icon
-                  className={cn('h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10', getIconColorClass())}
+                  className={cn(
+                    'h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10',
+                    getIconColorClass(),
+                  )}
                 />
               </div>
             )}
             <div className="space-y-2 sm:space-y-3 text-center">
               <AlertDialogTitle
-                className={cn('text-xl sm:text-xl font-bold leading-tight tracking-tight')}
+                className={cn(
+                  'text-xl sm:text-xl font-bold leading-tight tracking-tight',
+                )}
               >
                 {options.title || 'Are you sure?'}
               </AlertDialogTitle>
@@ -245,5 +260,5 @@ export default function AlertDialogProvider({ children }: { children: React.Reac
         </AlertDialogContent>
       </AlertDialog>
     </AlertDialogContext.Provider>
-  );
+  )
 }
