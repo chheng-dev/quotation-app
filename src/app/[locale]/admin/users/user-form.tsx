@@ -21,18 +21,9 @@ import {
   FormMessage,
 } from '@/src/components/ui/form'
 import { Input } from '@/src/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/src/components/ui/select'
 import StatusCombobox from '@/src/components/ui/shared/stauts-combobox'
-import { Switch } from '@/src/components/ui/switch'
 import { FormRef, useFormRef } from '@/src/hooks/use-form-ref'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PlusIcon } from 'lucide-react'
 
 type Props = {
   onSubmit: (values: UserSchema, reset: () => void) => Promise<void>
