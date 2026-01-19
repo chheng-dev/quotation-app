@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "resource_action_unique" ON "permissions" USING btree ("resource","action");

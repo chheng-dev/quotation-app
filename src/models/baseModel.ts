@@ -17,7 +17,6 @@ export interface PaginationResult<T> {
     page: number
     limit: number
     total: number
-    totalPages: number
   }
 }
 
@@ -119,35 +118,47 @@ export class BaseModel<T extends Record<string, unknown>> {
    * Find all records
    */
   async findAll(
-    query?: any,
-    limit: number = 10,
-    page: number = 1,
+    options: {
+      query?: any
+      limit?: number
+      page?: number
+    } = {},
   ): Promise<{
     items: T[]
     pagination: {
       page: number
       limit: number
       total: number
-      totalPages: number
     }
   }> {
+    const { query, limit, page } = options
     let queryBuilder: any = db.select().from(this.table)
 
     if (query) {
       queryBuilder = queryBuilder.where(this.buildWhereConditions(query))
     }
 
+    if (limit && page) {
+      const results = await queryBuilder.limit(limit).offset((page - 1) * limit)
+
+      return {
+        items: results as T[],
+        pagination: {
+          page,
+          limit,
+          total: results.length,
+        },
+      }
+    }
+
     const results = await queryBuilder
-      .limit(limit || 10)
-      .offset((page - 1) * (limit || 10))
 
     return {
       items: results as T[],
       pagination: {
-        page,
-        limit,
+        page: 1,
+        limit: results.length,
         total: results.length,
-        totalPages: Math.ceil(results.length / (limit || 10)),
       },
     }
   }
@@ -189,7 +200,6 @@ export class BaseModel<T extends Record<string, unknown>> {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
       },
     }
   }

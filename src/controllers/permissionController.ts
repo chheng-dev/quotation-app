@@ -2,8 +2,8 @@ import { NewPermission } from '../lib/db/schema'
 import { permissionModel } from '../models/permissionModel'
 
 export class PermissionController {
-  async list() {
-    const result = await permissionModel.findAll()
+  async list(options: { page?: number; limit?: number }) {
+    const result = await permissionModel.findAll(options)
     return result
   }
 

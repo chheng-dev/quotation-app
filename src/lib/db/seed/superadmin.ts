@@ -35,11 +35,23 @@ export async function superadmin() {
     { resource: 'roles', action: 'read' },
     { resource: 'roles', action: 'update' },
     { resource: 'roles', action: 'delete' },
+    { resource: 'permissions', action: 'create' },
+    { resource: 'permissions', action: 'read' },
+    { resource: 'permissions', action: 'update' },
+    { resource: 'permissions', action: 'delete' },
+    { resource: 'user_roles', action: 'create' },
+    { resource: 'user_roles', action: 'read' },
+    { resource: 'user_roles', action: 'update' },
+    { resource: 'user_roles', action: 'delete' },
+    { resource: 'role_permissions', action: 'create' },
+    { resource: 'role_permissions', action: 'read' },
+    { resource: 'role_permissions', action: 'update' },
+    { resource: 'role_permissions', action: 'delete' },
   ]
 
   const createdPerms = await db
     .insert(permissions)
-    .values(perms)
+    .values(perms as any)
     .onConflictDoNothing()
     .returning()
 

@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation'
 
 import PageLayout from '../shared/page-layout'
+import TableRole from './table'
 
 export default function RolesPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function RolesPage() {
       }}
       onSubmit={() => router.push('/admin/roles/new')}
     >
-      <h1>Role page</h1>
+      <TableRole />
     </PageLayout>
   )
 }

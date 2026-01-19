@@ -15,6 +15,20 @@
       "when": 1764400936880,
       "tag": "0001_create_next_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767622016647,
+      "tag": "0002_cooing_squirrel_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768050944604,
+      "tag": "0003_marvelous_champions",
+      "breakpoints": true
     }
   ]
 }
