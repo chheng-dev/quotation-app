@@ -4,9 +4,13 @@ import { permissionController } from '@/src/controllers/permissionController'
 import { handleProtectedRoute } from '@/src/lib/apiRouteWrappers'
 
 export const GET = handleProtectedRoute(
-  async () => {
+  async (request) => {
     try {
-      const result = await permissionController.list()
+      const params = await request.nextUrl.searchParams
+      const page = Number(params.get('page')) || undefined
+      const limit = Number(params.get('limit')) || undefined
+
+      const result = await permissionController.list({ page, limit })
       return NextResponse.json(result)
     } catch (error) {
       return NextResponse.json(

@@ -20,21 +20,36 @@ export function PermissionGuard({
   action,
   fallbackUrl,
 }: PermissionGuardProps) {
-  const { can, isLoading } = usePermissions()
+  const { can, isLoading, isAuthenticated } = usePermissions()
   const router = useRouter()
   const locale = useLocale()
 
   useEffect(() => {
     if (!isLoading) {
-      const hasPermission = can(resource, action)
+      // First check if user is authenticated
+      if (!isAuthenticated) {
+        const redirectUrl = fallbackUrl || `/${locale}/login`
+        router.replace(redirectUrl)
+        return
+      }
 
+      // If authenticated but no permission, redirect to login
+      const hasPermission = can(resource, action)
       if (!hasPermission) {
-        // Redirect to unauthorized page or fallback URL
-        const redirectUrl = fallbackUrl || `/${locale}/unauthorized`
+        const redirectUrl = fallbackUrl || `/${locale}/login`
         router.replace(redirectUrl)
       }
     }
-  }, [isLoading, can, resource, action, router, locale, fallbackUrl])
+  }, [
+    isLoading,
+    isAuthenticated,
+    can,
+    resource,
+    action,
+    router,
+    locale,
+    fallbackUrl,
+  ])
 
   // Show loading state while checking permissions
   if (isLoading) {
@@ -50,8 +65,8 @@ export function PermissionGuard({
     )
   }
 
-  // Don't render if no permission
-  if (!can(resource, action)) {
+  // Don't render if not authenticated or no permission
+  if (!isAuthenticated || !can(resource, action)) {
     return null
   }
 
@@ -71,12 +86,20 @@ export function MultiplePermissionGuard({
   requireAll = false,
   fallbackUrl,
 }: MultiplePermissionGuardProps) {
-  const { can, isLoading } = usePermissions()
+  const { can, isLoading, isAuthenticated } = usePermissions()
   const router = useRouter()
   const locale = useLocale()
 
   useEffect(() => {
     if (!isLoading) {
+      // First check if user is authenticated
+      if (!isAuthenticated) {
+        const redirectUrl = fallbackUrl || `/${locale}/login`
+        router.replace(redirectUrl)
+        return
+      }
+
+      // If authenticated, check permissions
       let hasPermission: boolean
 
       if (requireAll) {
@@ -88,11 +111,20 @@ export function MultiplePermissionGuard({
       }
 
       if (!hasPermission) {
-        const redirectUrl = fallbackUrl || `/${locale}/unauthorized`
+        const redirectUrl = fallbackUrl || `/${locale}/login`
         router.replace(redirectUrl)
       }
     }
-  }, [isLoading, can, permissions, requireAll, router, locale, fallbackUrl])
+  }, [
+    isLoading,
+    isAuthenticated,
+    can,
+    permissions,
+    requireAll,
+    router,
+    locale,
+    fallbackUrl,
+  ])
 
   if (isLoading) {
     return (
@@ -107,6 +139,12 @@ export function MultiplePermissionGuard({
     )
   }
 
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
+
+  // Check permissions
   let hasPermission: boolean
   if (requireAll) {
     hasPermission = permissions.every((p) => can(p.resource, p.action))

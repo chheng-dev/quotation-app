@@ -44,7 +44,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
   isCustomColumnsVisible?: boolean
   isLoading?: boolean
-  actions?: React.ReactNode
+  actions?: (row: TData) => React.ReactNode
 }
 
 export function GenericDataTable<TData, TValue>({
@@ -68,38 +68,27 @@ export function GenericDataTable<TData, TValue>({
     pageSize: 10,
   })
 
-  //   if (actions) {
-  //     cols.push({
-  //       id: "actions",
-  //       header: () => <div className="text-right">Actions</div>,
-  //       cell: (context: CellContext<TData, any>) => {
-  //         const row = context.row;
-  //         return (
-  //           <div className="text-right" onClick={(e) => e.stopPropagation()}>
-  //             <DropdownMenu>
-  //               <DropdownMenuTrigger asChild>
-  //                 <Button variant="ghost" className="h-8 w-8 p-0">
-  //                   <span className="sr-only">Open menu</span>
-  //                   <MoreHorizontal className="h-4 w-4" />
-  //                 </Button>
-  //               </DropdownMenuTrigger>
-  //               <DropdownMenuContent align="end">
-  //                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //                 <DropdownMenuSeparator />
-  //                 {actions}
-  //               </DropdownMenuContent>
-  //             </DropdownMenu>
-  //           </div>
-  //         );
-  //       },
-  //     } as ColumnDef<TData, TValue>);
-  //   }
-  // });
+  // Memoize columns to prevent infinite loop (although useReactTable handles it well, it's safer)
+  // And append actions column if actions prop is provided
+  const tableColumns = React.useMemo(() => {
+    if (!actions) return columns
+
+    return [
+      ...columns,
+      {
+        id: 'actions',
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-end">{actions(row.original)}</div>
+        ),
+      } as ColumnDef<TData, TValue>,
+    ]
+  }, [columns, actions])
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns,
     state: {
       sorting,
       columnFilters,
@@ -124,7 +113,7 @@ export function GenericDataTable<TData, TValue>({
   const skeletonRows = Array.from({ length: pagination.pageSize }).map(
     (_, rowIndex) => (
       <TableRow key={`skeleton-${rowIndex}`} className="hover:bg-transparent">
-        {columns.map((column, colIndex) => (
+        {tableColumns.map((column, colIndex) => (
           <TableCell
             key={`skeleton-${rowIndex}-${colIndex}`}
             colSpan={(column as any).size ?? 1}
@@ -229,7 +218,7 @@ export function GenericDataTable<TData, TValue>({
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={tableColumns.length}
                       className="h-24 text-center"
                     >
                       No results.

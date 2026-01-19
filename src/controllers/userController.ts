@@ -8,7 +8,7 @@ class UserController {
   }
 
   async list(query?: any, limit?: number, page?: number) {
-    const result = await userModel.findAll(query, limit, page)
+    const result = await userModel.findAll({ query, limit, page })
     return result
   }
 

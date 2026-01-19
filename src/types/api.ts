@@ -46,3 +46,13 @@ export type ApiClientOptions = RequestInit & {
   credentials?: RequestCredentials
   params?: Record<string, string | number | boolean>
 }
+
+export type QueryOptions = {
+  items: any[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}

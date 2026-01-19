@@ -15,7 +15,8 @@
     "test:jwt": "tsx scripts/test-jwt.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sync:permissions": "tsx scripts/sync-permissions.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -51,3 +51,14 @@ export interface PermissionCheck {
   action: Action
   data?: Record<string, unknown>
 }
+
+export interface PermissionActionItem {
+  action: Action
+  label: string
+  description: string
+}
+
+export interface PermissionGroup {
+  resource: Resource
+  actions: PermissionActionItem[]
+}

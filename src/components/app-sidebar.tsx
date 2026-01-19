@@ -238,10 +238,10 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     return {
       user: authUser
         ? {
-          name: authUser.name,
-          email: authUser.email,
-          avatar: '/avatars/shadcn.jpg',
-        }
+            name: authUser.name,
+            email: authUser.email,
+            avatar: '/avatars/shadcn.jpg',
+          }
         : data.user,
       navMain: filterSidebarItems(
         data.navMain,

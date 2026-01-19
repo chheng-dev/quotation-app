@@ -12,5 +12,12 @@
     "duration": "2042ms",
     "user": "user",
     "applied": true
+  },
+  {
+    "name": "add_uniq_permission",
+    "timestamp": "2026-01-05T14:07:52.338Z",
+    "duration": "995ms",
+    "user": "user",
+    "applied": true
   }
 ]

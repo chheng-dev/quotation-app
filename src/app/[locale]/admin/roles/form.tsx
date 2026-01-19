@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { forwardRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
+  RoleFormSchema,
   RoleUpdateFormSchema,
   roleCreateSchema,
   roleUpdateSchema,
@@ -36,116 +36,99 @@ import PermissionCard from '@/src/components/ui/shared/permission-card'
 import { Switch } from '@/src/components/ui/switch'
 import { Textarea } from '@/src/components/ui/textarea'
 import { FormRef, useFormRef } from '@/src/hooks/use-form-ref'
+import { getPermissions, listPermissions } from '@/src/hooks/use-permission'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   ChevronDown,
   ChevronUp,
   ChevronsUpDownIcon,
-  PencilIcon,
-  PlusIcon,
-  SearchIcon,
+  Contact as ContactIcon,
+  FileIcon,
   ShieldCheckIcon,
-  Trash2Icon,
   UserIcon,
+  Users as UsersIcon,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
 type Props = {
-  onSubmit: (values: any, reset: () => void) => Promise<void>
+  onSubmit: (
+    values: RoleFormSchema | RoleUpdateFormSchema,
+    reset: () => void,
+  ) => Promise<void>
   defaultValue?: Partial<RoleUpdateFormSchema>
   mode?: 'create' | 'update'
 }
 
-export type RoleFormRef = FormRef<RoleUpdateFormSchema>
-
-const AVAILABLE_PERMISSIONS = [
-  {
-    resource: 'users',
-    icon: UserIcon,
-    actions: [
-      {
-        action: 'read',
-        label: 'View Users',
-        description: 'Access the user listing and basic profiles',
-        icon: SearchIcon,
-      },
-      {
-        action: 'create',
-        label: 'Create Users',
-        description: 'Provision new user accounts',
-        icon: PlusIcon,
-      },
-      {
-        action: 'update',
-        label: 'Edit Users',
-        description: 'Modify existing user details and settings',
-        icon: PencilIcon,
-      },
-      {
-        action: 'delete',
-        label: 'Delete Users',
-        description: 'Optionally disable or remove user accounts',
-        icon: Trash2Icon,
-      },
-    ],
-  },
-  {
-    resource: 'roles',
-    icon: ShieldCheckIcon,
-    actions: [
-      {
-        action: 'read',
-        label: 'View Roles',
-        description: 'See all available roles and their permissions',
-        icon: SearchIcon,
-      },
-      {
-        action: 'create',
-        label: 'Create Roles',
-        description: 'Design new roles with custom permissions',
-        icon: PlusIcon,
-      },
-      {
-        action: 'update',
-        label: 'Edit Roles',
-        description: 'Update permissions for existing roles',
-        icon: PencilIcon,
-      },
-      {
-        action: 'delete',
-        label: 'Delete Roles',
-        description: 'Clean up unused or obsolete roles',
-        icon: Trash2Icon,
-      },
-    ],
-  },
-]
+export type RoleFormRef = FormRef<RoleFormSchema | RoleUpdateFormSchema>
 
 const RoleForm = forwardRef<RoleFormRef, Props>(
   ({ onSubmit, defaultValue, mode }, ref) => {
     const formMode = mode || (defaultValue?.id ? 'update' : 'create')
     const schema = formMode === 'create' ? roleCreateSchema : roleUpdateSchema
 
-    const form = useForm<RoleUpdateFormSchema>({
+    // Get raw permissions data with IDs for mapping
+    const { data: permissionsData } = getPermissions()
+    const rawPermissions = permissionsData?.items || []
+
+    // Transform API permissions format to form format
+    const transformPermissionsForForm = (apiPermissions: any[]) => {
+      if (!apiPermissions || !Array.isArray(apiPermissions)) return []
+      return apiPermissions.map((p: any) => ({
+        resource: p.resource,
+        action: p.action,
+      }))
+    }
+
+    const form = useForm<RoleFormSchema | RoleUpdateFormSchema>({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       resolver: zodResolver(schema) as any,
       defaultValues: {
-        id: defaultValue?.id,
+        ...(formMode === 'update' &&
+          defaultValue?.id && { id: defaultValue.id }),
         name: defaultValue?.name || '',
         description: defaultValue?.description || '',
-        permissions: defaultValue?.permissions || [],
+        permissions: transformPermissionsForForm(
+          defaultValue?.permissions || [],
+        ),
       },
     })
+
+    const transformPermissionsToIds = (
+      formPermissions: { resource: string; action: string }[],
+    ) => {
+      if (!formPermissions || !Array.isArray(formPermissions)) return []
+      if (!rawPermissions || rawPermissions.length === 0) return []
+
+      return formPermissions
+        .map((fp) => {
+          const permission = rawPermissions.find(
+            (p: any) => p.resource === fp.resource && p.action === fp.action,
+          )
+          return permission?.id
+        })
+        .filter((id): id is number => id !== undefined && id !== null)
+    }
 
     useFormRef(ref, {
       form,
       onSubmit: async (values, reset) => {
-        await onSubmit(values, reset)
+        // Transform permissions to IDs before submitting
+        const transformedValues = {
+          ...values,
+          permissions: transformPermissionsToIds(values.permissions),
+        }
+        await onSubmit(
+          transformedValues as RoleFormSchema | RoleUpdateFormSchema | any,
+          reset,
+        )
       },
     })
 
+    const { permissions } = listPermissions()
+
     const [expandedResources, setExpandedResources] = useState<string[]>(
-      AVAILABLE_PERMISSIONS.map((p) => p.resource),
+      permissions.map((p) => p.resource),
     )
 
     const toggleResource = (resource: string) => {
@@ -157,15 +140,15 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
     }
 
     const toggleAll = () => {
-      if (expandedResources.length === AVAILABLE_PERMISSIONS.length) {
+      if (expandedResources.length === permissions.length) {
         setExpandedResources([])
       } else {
-        setExpandedResources(AVAILABLE_PERMISSIONS.map((p) => p.resource))
+        setExpandedResources(permissions.map((p: any) => p.resource))
       }
     }
 
     const handleToggleGroup = (resource: string, checked: boolean) => {
-      const group = AVAILABLE_PERMISSIONS.find((g) => g.resource === resource)
+      const group = permissions.find((g) => g.resource === resource)
       if (!group) return
 
       const current = form.getValues('permissions') || []
@@ -194,7 +177,7 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
 
     const handleToggleAllPermissions = (checked: boolean) => {
       if (checked) {
-        const allPermissions = AVAILABLE_PERMISSIONS.flatMap((group) =>
+        const allPermissions = permissions.flatMap((group) =>
           group.actions.map((a) => ({
             resource: group.resource,
             action: a.action as any,
@@ -295,7 +278,7 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
                       id="global-select-all"
                       checked={
                         form.watch('permissions')?.length ===
-                        AVAILABLE_PERMISSIONS.flatMap((g) => g.actions).length
+                        permissions.flatMap((g) => g.actions).length
                       }
                       onCheckedChange={handleToggleAllPermissions}
                     />
@@ -316,7 +299,7 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
                 >
                   <ChevronsUpDownIcon className="w-3.5 h-3.5" />
                   <span className="text-xs font-semibold">
-                    {expandedResources.length === AVAILABLE_PERMISSIONS.length
+                    {expandedResources.length === permissions.length
                       ? 'Collapse All'
                       : 'Expand All'}
                   </span>
@@ -325,8 +308,15 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {AVAILABLE_PERMISSIONS.map((group) => {
-                  const ResourceIcon = group.icon
+                {permissions.map((group) => {
+                  // Map resource to icon
+                  const iconMap: Record<string, any> = {
+                    users: UserIcon,
+                    roles: ShieldCheckIcon,
+                    customers: UsersIcon,
+                    contacts: ContactIcon,
+                  }
+                  const ResourceIcon = iconMap[group.resource] || FileIcon
                   const selectedCount =
                     form
                       .watch('permissions')
@@ -401,7 +391,7 @@ const RoleForm = forwardRef<RoleFormRef, Props>(
                       </CollapsibleTrigger>
                       <CollapsibleContent className="p-4 bg-background border-t">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {group.actions.map((item) => {
+                          {group.actions.map((item: any) => {
                             const isChecked = form
                               .watch('permissions')
                               ?.some(

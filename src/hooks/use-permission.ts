@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
+
 import {
   canPerformAction,
   getAllowedActions,
@@ -11,7 +13,14 @@ import {
   hasPermission,
   hasRole,
 } from '../app/utils/permissions'
-import { Action, PermissionCheck, Resource, UserProfile } from '../types/rbac'
+import { permissionApi } from '../lib/api/permission-api'
+import {
+  Action,
+  PermissionCheck,
+  PermissionGroup,
+  Resource,
+  UserProfile,
+} from '../types/rbac'
 import { useAuth } from './use-auth'
 
 export function usePermissions() {
@@ -124,4 +133,78 @@ export function usePermissions() {
     // Permission utilities
     getAllowedResourceActions,
   }
+}
+
+export function getPermissions() {
+  return useQuery({
+    queryKey: ['permissions'],
+    queryFn: () => {
+      return permissionApi.list()
+    },
+  })
+}
+
+export function listPermissions() {
+  const { data, isLoading } = getPermissions()
+  const result = transform(data?.items || [])
+
+  return {
+    permissions: result,
+    isLoading,
+  }
+}
+
+export function transform(data: any[]): PermissionGroup[] {
+  if (!data || !Array.isArray(data)) return []
+
+  // Group permissions by resource
+  const grouped = data.reduce(
+    (acc, permission) => {
+      const { resource, action, description } = permission
+
+      if (!acc[resource]) {
+        acc[resource] = {
+          resource,
+          actions: [],
+        }
+      }
+
+      acc[resource].actions.push({
+        action,
+        label: formatActionLabel(action, resource),
+        description: description || formatActionDescription(action, resource),
+      })
+
+      return acc
+    },
+    {} as Record<string, PermissionGroup>,
+  )
+
+  // Convert to array
+  return Object.values(grouped)
+}
+
+// Helper function to format action labels
+function formatActionLabel(action: string, resource: string): string {
+  const actionMap: Record<string, string> = {
+    create: 'Create',
+    read: 'View',
+    update: 'Edit',
+    delete: 'Delete',
+  }
+
+  const resourceName = resource.charAt(0).toUpperCase() + resource.slice(1)
+  return `${actionMap[action] || action} ${resourceName}`
+}
+
+// Helper function to format action descriptions
+function formatActionDescription(action: string, resource: string): string {
+  const descriptionMap: Record<string, string> = {
+    create: `Create new ${resource}`,
+    read: `View all ${resource} and their details`,
+    update: `Update existing ${resource}`,
+    delete: `Delete ${resource}`,
+  }
+
+  return descriptionMap[action] || `${action} ${resource}`
 }
